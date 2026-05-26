@@ -29,6 +29,14 @@ app.use(express.urlencoded({ extended: true }));
 
 app.use("/uploads", express.static(path.join(__dirname, "../uploads")));
 
+app.get("/", (req, res) => {
+  res.json({
+    ok: true,
+    service: "young-explorers-api",
+    message: "Use POST / with a Command header to call the API.",
+  });
+});
+
 app.get("/health", (req, res) => {
   res.json({ ok: true, service: "young-explorers-api" });
 });
