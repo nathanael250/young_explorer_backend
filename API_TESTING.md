@@ -1,5 +1,18 @@
 # Young Explorers API Testing Guide
 
+## ⭐ Quick Reference: PUBLIC APIs (No Authentication!)
+
+Perfect for first-time visitors to browse available options:
+
+| Purpose | Command | Notes |
+|---------|---------|-------|
+| Browse all published packages | `LIST_PACKAGES` | Shows only `status: "published"` |
+| Browse all destinations | `LIST_DESTINATIONS` | No authentication needed |
+| Browse package durations | `LIST_DURATIONS` | Shows only active durations |
+| Get published package details | `GET_PACKAGE_DETAILS` | With ID or slug |
+
+---
+
 All command requests use the root endpoint:
 
 ```http
@@ -209,6 +222,30 @@ Body:
 }
 ```
 
+To upload the destination image while creating it, send the same command as `multipart/form-data`.
+
+Form data:
+
+```txt
+data:
+{
+  "name": "Kigali Genocide Memorial",
+  "province": "Kigali",
+  "district": "Gasabo",
+  "category": "history",
+  "short_description": "A memorial and learning center in Kigali.",
+  "full_description": "A key destination for understanding Rwanda history.",
+  "best_time_to_visit": "All year",
+  "entry_fee": 0,
+  "latitude": -1.9306,
+  "longitude": 30.0606,
+  "status": "active"
+}
+file: destination-image.jpg
+```
+
+The backend saves the file and automatically sets `main_image` to the uploaded `/uploads/...` path.
+
 ## List Destinations
 
 Headers:
@@ -274,6 +311,81 @@ Body:
   "status": "draft"
 }
 ```
+
+To upload package images while creating it, send the same command as `multipart/form-data`.
+
+Logical request shape:
+
+```json
+{
+  "title": "5-Day Rwanda Explorer",
+  "short_description": "Culture, history, and city highlights.",
+  "full_description": "A youth-friendly Rwanda exploration package.",
+  "duration_id": 2,
+  "price_per_person": 450,
+  "currency": "USD",
+  "meeting_point": "Kigali International Airport",
+  "emergency_contact": "+250788222222",
+  "age_range": "15-25",
+  "fitness_level": "easy",
+  "status": "draft",
+  "images": [
+    "package-front.jpg",
+    "package-gallery-1.jpg",
+    "package-gallery-2.jpg"
+  ]
+}
+```
+
+Form data:
+
+```txt
+data:
+{
+  "title": "5-Day Rwanda Explorer",
+  "short_description": "Culture, history, and city highlights.",
+  "full_description": "A youth-friendly Rwanda exploration package.",
+  "duration_id": 2,
+  "price_per_person": 450,
+  "currency": "USD",
+  "meeting_point": "Kigali International Airport",
+  "emergency_contact": "+250788222222",
+  "age_range": "15-25",
+  "fitness_level": "easy",
+  "status": "draft"
+}
+images: package-front.jpg
+images: package-gallery-1.jpg
+images: package-gallery-2.jpg
+```
+
+You can also use `package_images` instead of `images`. The backend saves all images, automatically sets `main_image` to the first uploaded image, and returns the gallery in `images`.
+
+Frontend `FormData` example:
+
+```js
+const formData = new FormData();
+
+formData.append("data", JSON.stringify({
+  title: "5-Day Rwanda Explorer",
+  short_description: "Culture, history, and city highlights.",
+  full_description: "A youth-friendly Rwanda exploration package.",
+  duration_id: 2,
+  price_per_person: 450,
+  currency: "USD",
+  meeting_point: "Kigali International Airport",
+  emergency_contact: "+250788222222",
+  age_range: "15-25",
+  fitness_level: "easy",
+  status: "draft"
+}));
+
+for (const image of images) {
+  formData.append("images", image);
+}
+```
+
+Here `images` is an array of browser `File` objects. The backend receives the files, saves them in the `uploads` folder, and stores only text paths like `/uploads/1712345678900-front.jpg` in the database.
 
 ## Set Package Rules
 
@@ -579,12 +691,139 @@ Form data:
 file: image.jpg
 ```
 
-## Specific Listing And Destination Commands
+## Public Package Listing (No Authentication Required)
+
+**This is perfect for first-time visitors to browse available packages and destinations!**
+
+### List All Published Packages
+
+**No authentication needed.** Returns only packages with `status: "published"`.
+
+Headers:
+
+```http
+Command: LIST_PACKAGES
+Content-Type: application/json
+```
+
+Body:
+
+```json
+{
+  "page": 1,
+  "limit": 20,
+  "search": "Rwanda"
+}
+```
+
+Response example:
+
+```json
+{
+  "ok": true,
+  "data": {
+    "rows": [
+      {
+        "id": 1,
+        "title": "5-Day Rwanda Explorer",
+        "slug": "5-day-rwanda-explorer",
+        "short_description": "Culture, history, and city highlights.",
+        "price_per_person": 450,
+        "currency": "USD",
+        "duration_id": 2,
+        "main_image": "/uploads/package-1.jpg",
+        "meeting_point": "Kigali International Airport",
+        "age_range": "15-25",
+        "fitness_level": "easy",
+        "status": "published"
+      }
+    ],
+    "pagination": {
+      "page": 1,
+      "limit": 20,
+      "total": 5
+    }
+  }
+}
+```
+
+### List All Destinations
+
+**No authentication needed.** Always shows all destinations.
+
+Headers:
+
+```http
+Command: LIST_DESTINATIONS
+Content-Type: application/json
+```
+
+Body:
+
+```json
+{
+  "page": 1,
+  "limit": 20,
+  "search": "Volcanoes"
+}
+```
+
+### List Package Durations
+
+**No authentication needed.** Returns only active durations.
+
+Headers:
+
+```http
+Command: LIST_DURATIONS
+Content-Type: application/json
+```
+
+Body:
+
+```json
+{
+  "page": 1,
+  "limit": 20
+}
+```
+
+### Get Package Details (Public)
+
+**No authentication needed.** Only shows packages with `status: "published"`.
+
+Headers:
+
+```http
+Command: GET_PACKAGE_DETAILS
+Content-Type: application/json
+```
+
+Body:
+
+```json
+{
+  "id": 1
+}
+```
+
+Or use slug:
+
+```json
+{
+  "slug": "5-day-rwanda-explorer"
+}
+```
+
+---
+
+## Specific Admin Listing And Destination Commands
 
 List:
 
 ```http
 Command: LIST_PACKAGES
+Authorization: Bearer ADMIN_TOKEN
 Content-Type: application/json
 ```
 

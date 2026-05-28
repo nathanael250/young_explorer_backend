@@ -2,7 +2,7 @@ const slugify = require("slugify");
 const { query } = require("../config/database");
 const resources = require("./resources");
 const { insert, update, findById } = require("./dbHelpers");
-const { httpError, requireAdmin } = require("./modelUtils");
+const { httpError, requireAdmin, attachUploadedMainImage } = require("./modelUtils");
 
 async function listResource(context) {
   const config = getResourceConfig(context.body.resource);
@@ -22,10 +22,11 @@ async function listResource(context) {
   const offset = (page - 1) * limit;
   const where = buildWhere(config, filters, search);
 
-  const rows = await query(
+  let rows = await query(
     `SELECT ${config.listFields.join(", ")} FROM ${config.table}${where.sql} ORDER BY id DESC LIMIT ${limit} OFFSET ${offset}`,
     where.params
   );
+  rows = await attachRelatedData(config, rows);
   const totals = await query(`SELECT COUNT(*) AS total FROM ${config.table}${where.sql}`, where.params);
 
   return {
@@ -63,7 +64,8 @@ async function createResource(context) {
   const config = getResourceConfig(context.body.resource);
   ensureCanCreate(config, context.user);
 
-  const data = normalizeResourceData(config, context.body.data || {}, context.user);
+  const rawData = withUploadedMainImage(config, context.body.data || {}, context.file);
+  const data = normalizeResourceData(config, rawData, context.user);
   const result = await insert(config.table, data);
   const row = await findById(config, result.insertId, ["*"]);
 
@@ -83,7 +85,8 @@ async function updateResource(context) {
     throw httpError(400, "Resource id is required");
   }
 
-  const data = normalizeResourceData(config, context.body.data || {}, context.user);
+  const rawData = withUploadedMainImage(config, context.body.data || {}, context.file);
+  const data = normalizeResourceData(config, rawData, context.user);
   delete data.id;
 
   if (!Object.keys(data).length) {
@@ -148,6 +151,40 @@ function normalizeResourceData(config, data, user) {
   }
 
   return filtered;
+}
+
+function withUploadedMainImage(config, data, file) {
+  if (!file || !config.writableFields.includes("main_image")) {
+    return data;
+  }
+
+  return attachUploadedMainImage(data, file);
+}
+
+async function attachRelatedData(config, rows) {
+  if (config.table !== "packages" || !rows.length) {
+    return rows;
+  }
+
+  const packageIds = rows.map((row) => row.id);
+  const placeholders = packageIds.map(() => "?").join(", ");
+  const images = await query(
+    `SELECT id, package_id, image_path, sort_order, created_at
+     FROM package_images
+     WHERE package_id IN (${placeholders})
+     ORDER BY sort_order ASC, id ASC`,
+    packageIds
+  );
+  const imagesByPackageId = images.reduce((grouped, image) => {
+    grouped[image.package_id] = grouped[image.package_id] || [];
+    grouped[image.package_id].push(image);
+    return grouped;
+  }, {});
+
+  return rows.map((row) => ({
+    ...row,
+    images: imagesByPackageId[row.id] || [],
+  }));
 }
 
 function buildWhere(config, filters, search) {

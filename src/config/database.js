@@ -64,6 +64,7 @@ async function checkSchema() {
     ["packages", "currency"],
     ["package_availability", "remaining_seats"],
   ];
+  const requiredTables = ["package_images"];
   const missing = [];
 
   for (const [table, column] of requiredColumns) {
@@ -81,8 +82,22 @@ async function checkSchema() {
     }
   }
 
+  for (const table of requiredTables) {
+    const rows = await query(
+      `SELECT COUNT(*) AS total
+       FROM INFORMATION_SCHEMA.TABLES
+       WHERE TABLE_SCHEMA = DATABASE()
+         AND TABLE_NAME = ?`,
+      [table]
+    );
+
+    if (!rows[0].total) {
+      missing.push(table);
+    }
+  }
+
   if (missing.length) {
-    console.warn(`Missing database columns: ${missing.join(", ")}. Run src/config/migrations/001_align_requirements.sql`);
+    console.warn(`Missing database schema: ${missing.join(", ")}. Run the files in src/config/migrations.`);
   }
 }
 

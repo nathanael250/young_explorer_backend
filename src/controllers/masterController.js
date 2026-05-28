@@ -4,11 +4,12 @@ async function handle(req, res, next) {
   try {
     normalizeMultipartBody(req);
     const body = normalizeCommandRequest(req);
+    const files = normalizeUploadedFiles(req);
 
     const result = await MasterModel.handleCommand({
       body,
-      file: req.file,
-      files: req.files,
+      file: files.file,
+      files,
       user: req.user,
     });
 
@@ -20,6 +21,19 @@ async function handle(req, res, next) {
   } catch (error) {
     return next(error);
   }
+}
+
+function normalizeUploadedFiles(req) {
+  const groupedFiles = req.files || {};
+  const file = req.file || groupedFiles.file?.[0] || null;
+  const packageImages = [...(groupedFiles.package_images || []), ...(groupedFiles.images || [])];
+
+  return {
+    ...groupedFiles,
+    file,
+    package_images: packageImages,
+    images: packageImages,
+  };
 }
 
 function normalizeMultipartBody(req) {

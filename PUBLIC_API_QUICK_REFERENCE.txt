@@ -1,0 +1,72 @@
+╔════════════════════════════════════════════════════════════════════╗
+║                   PUBLIC API QUICK REFERENCE                        ║
+║                  (No Authentication Required)                       ║
+╚════════════════════════════════════════════════════════════════════╝
+
+ENDPOINT: POST http://localhost:5008
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1️⃣  LIST ALL PUBLISHED PACKAGES
+
+   Header: Command: LIST_PACKAGES
+   
+   Body:
+   {
+     "page": 1,
+     "limit": 20,
+     "search": "Rwanda"
+   }
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+2️⃣  GET FULL PACKAGE DETAILS (with itinerary + destinations)
+
+   Header: Command: GET_PACKAGE_DETAILS
+   
+   By ID:
+   { "id": 1 }
+   
+   By Slug (preferred):
+   { "slug": "5-day-rwanda-explorer" }
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+3️⃣  LIST ALL DESTINATIONS
+
+   Header: Command: LIST_DESTINATIONS
+   
+   Body:
+   {
+     "page": 1,
+     "limit": 20,
+     "search": "Volcanoes"
+   }
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+4️⃣  LIST PACKAGE DURATIONS
+
+   Header: Command: LIST_DURATIONS
+   
+   Body:
+   { "page": 1, "limit": 20 }
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+IMPORTANT NOTES:
+
+✅ No "Authorization" header needed
+✅ Returns only published packages (status: "published")
+✅ Supports pagination (page, limit)
+✅ Supports search
+✅ Perfect for first-time visitors
+✅ When ready to book, visitor registers and gets token
+
+For complete examples and integration code, see:
+→ PUBLIC_API_EXAMPLES.md
+→ API_TESTING.md
+
+╔════════════════════════════════════════════════════════════════════╗
+║  REMEMBER: Packages must have status="published" to appear         ║
+╚════════════════════════════════════════════════════════════════════╝

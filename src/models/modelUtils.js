@@ -26,6 +26,25 @@ function requireAdmin(user) {
   }
 }
 
+function attachUploadedMainImage(data, file) {
+  if (!file) {
+    return data;
+  }
+
+  return {
+    ...data,
+    main_image: uploadedImagePath(file),
+  };
+}
+
+function uploadedImagePath(file) {
+  if (!file.mimetype || !file.mimetype.startsWith("image/")) {
+    throw httpError(400, "Main image must be an image file");
+  }
+
+  return `/uploads/${file.filename}`;
+}
+
 async function queryAsExecute(query, sql, params) {
   const rows = await query(sql, params);
   return [rows];
@@ -36,5 +55,7 @@ module.exports = {
   requireFields,
   requireUser,
   requireAdmin,
+  attachUploadedMainImage,
+  uploadedImagePath,
   queryAsExecute,
 };

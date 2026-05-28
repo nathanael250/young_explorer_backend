@@ -58,6 +58,15 @@ CREATE TABLE package_days (
     FOREIGN KEY (package_id) REFERENCES packages(id)
 );
 
+CREATE TABLE package_images (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    package_id BIGINT,
+    image_path VARCHAR(255),
+    sort_order INT DEFAULT 1,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (package_id) REFERENCES packages(id)
+);
+
 CREATE TABLE destinations (
     id BIGINT PRIMARY KEY AUTO_INCREMENT,
     name VARCHAR(255),

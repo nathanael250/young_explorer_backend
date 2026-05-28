@@ -2,12 +2,13 @@ const { query, transaction } = require("../config/database");
 const resources = require("./resources");
 const { normalizeResourceData } = require("./resourceModel");
 const { update, findById } = require("./dbHelpers");
-const { httpError, requireAdmin, requireFields, queryAsExecute } = require("./modelUtils");
+const { httpError, requireAdmin, requireFields, attachUploadedMainImage, uploadedImagePath, queryAsExecute } = require("./modelUtils");
 
 async function createPackageWithDays(context) {
   requireAdmin(context.user);
 
-  const data = context.body.data || {};
+  const imageFiles = getPackageImageFiles(context);
+  const data = attachUploadedMainImage(context.body.data || {}, imageFiles[0]);
   requireFields(data, ["title", "duration_id"]);
 
   const createdPackage = await transaction(async (connection) => {
@@ -29,6 +30,7 @@ async function createPackageWithDays(context) {
       `INSERT INTO packages (${fields.join(", ")}) VALUES (${placeholders})`,
       values
     );
+    await insertPackageImages(connection, packageResult.insertId, imageFiles);
 
     for (let dayNumber = 1; dayNumber <= duration.total_days; dayNumber += 1) {
       await connection.execute(
@@ -75,7 +77,8 @@ async function updatePackage(context) {
   requireAdmin(context.user);
 
   const id = context.body.id || context.body.data?.id;
-  const data = context.body.data || {};
+  const imageFiles = getPackageImageFiles(context);
+  const data = attachUploadedMainImage(context.body.data || {}, imageFiles[0]);
 
   if (!id) {
     throw httpError(400, "Package id is required");
@@ -98,6 +101,7 @@ async function updatePackage(context) {
       const values = fields.map((field) => packageData[field]);
       await connection.execute(`UPDATE packages SET ${assignments} WHERE id = ?`, [...values, id]);
     }
+    await insertPackageImages(connection, id, imageFiles);
 
     if (data.duration_id && Number(data.duration_id) !== Number(existing.duration_id)) {
       await syncPackageDays(connection, id, data.duration_id);
@@ -356,6 +360,10 @@ async function findPackageDetailsById(packageId, connection = null) {
      ORDER BY start_date ASC`,
     [packageId]
   );
+  const [images] = await runner.execute(
+    "SELECT id, package_id, image_path, sort_order, created_at FROM package_images WHERE package_id = ? ORDER BY sort_order ASC, id ASC",
+    [packageId]
+  );
 
   const [inclusions] = await runner.execute("SELECT id, item FROM package_inclusions WHERE package_id = ? ORDER BY id ASC", [
     packageId,
@@ -385,11 +393,30 @@ async function findPackageDetailsById(packageId, connection = null) {
       destinations: destinationsByDayId[day.id] || [],
     })),
     availability,
+    images,
     inclusions,
     exclusions,
     required_items: requiredItems,
     not_allowed_items: notAllowedItems,
   };
+}
+
+function getPackageImageFiles(context) {
+  const galleryFiles = context.files?.package_images || context.files?.images || [];
+  const files = galleryFiles.length ? galleryFiles : [context.file].filter(Boolean);
+
+  files.forEach((file) => uploadedImagePath(file));
+  return files;
+}
+
+async function insertPackageImages(connection, packageId, files) {
+  for (let index = 0; index < files.length; index += 1) {
+    await connection.execute("INSERT INTO package_images (package_id, image_path, sort_order) VALUES (?, ?, ?)", [
+      packageId,
+      uploadedImagePath(files[index]),
+      index + 1,
+    ]);
+  }
 }
 
 async function syncPackageDays(connection, packageId, durationId) {
