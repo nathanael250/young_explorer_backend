@@ -1,5 +1,6 @@
 const commands = require("../config/command");
 const authModel = require("./authModel");
+const vendorModel = require("./vendorModel");
 const resourceModel = require("./resourceModel");
 const packageModel = require("./packageModel");
 const bookingModel = require("./bookingModel");
@@ -32,6 +33,14 @@ async function handleCommand(context) {
       return { message: "API is ready", data: { service: "young-explorers-api" } };
     case commands.AUTH_REGISTER:
       return authModel.register(context.body.data || {});
+    case commands.VENDOR_REGISTER:
+      return vendorModel.registerVendor(context);
+    case commands.VENDOR_LIST:
+      return vendorModel.listVendors(context);
+    case commands.VENDOR_GET:
+      return vendorModel.getVendor(context);
+    case commands.VENDOR_REVIEW:
+      return vendorModel.reviewVendor(context);
     case commands.AUTH_LOGIN:
       return authModel.login(context.body.data || {});
     case commands.AUTH_ME:
@@ -76,6 +85,10 @@ async function handleCommand(context) {
       return bookingModel.cancelBooking(context);
     case commands.BOOKING_EXPIRE_PENDING:
       return bookingModel.expirePendingBookings(context);
+    case commands.BOOKING_QUOTE_VIP:
+      return bookingModel.quoteVipBooking(context);
+    case commands.BOOKING_MARK_VIP_PAID:
+      return bookingModel.markVipBookingPaid(context);
     case commands.PAYMENT_SUBMIT:
       return paymentModel.submitPayment(context);
     case commands.PAYMENT_VERIFY:
@@ -98,6 +111,10 @@ const resourceCommandMap = {
   [commands.UPDATE_DESTINATION]: { resource: "destinations", handler: resourceModel.updateResource },
   [commands.DELETE_DESTINATION]: { resource: "destinations", handler: resourceModel.deleteResource },
   [commands.LIST_DURATIONS]: { resource: "package_durations", handler: resourceModel.listResource },
+  [commands.LIST_CATEGORIES]: { resource: "categories", handler: resourceModel.listResource },
+  [commands.CREATE_CATEGORY]: { resource: "categories", handler: resourceModel.createResource },
+  [commands.UPDATE_CATEGORY]: { resource: "categories", handler: resourceModel.updateResource },
+  [commands.DELETE_CATEGORY]: { resource: "categories", handler: resourceModel.deleteResource },
   [commands.CREATE_DURATION]: { resource: "package_durations", handler: resourceModel.createResource },
   [commands.UPDATE_DURATION]: { resource: "package_durations", handler: resourceModel.updateResource },
   [commands.DELETE_DURATION]: { resource: "package_durations", handler: resourceModel.deleteResource },

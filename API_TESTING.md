@@ -222,7 +222,29 @@ Body:
 }
 ```
 
-To upload the destination image while creating it, send the same command as `multipart/form-data`.
+To upload destination images while creating it, send the same command as `multipart/form-data`.
+
+Logical request shape:
+
+```json
+{
+  "name": "Kigali Genocide Memorial",
+  "province": "Kigali",
+  "district": "Gasabo",
+  "category": "history",
+  "short_description": "A memorial and learning center in Kigali.",
+  "full_description": "A key destination for understanding Rwanda history.",
+  "best_time_to_visit": "All year",
+  "entry_fee": 0,
+  "latitude": -1.9306,
+  "longitude": 30.0606,
+  "status": "active",
+  "images": [
+    "destination-front.jpg",
+    "destination-gallery-1.jpg"
+  ]
+}
+```
 
 Form data:
 
@@ -241,10 +263,11 @@ data:
   "longitude": 30.0606,
   "status": "active"
 }
-file: destination-image.jpg
+images: destination-front.jpg
+images: destination-gallery-1.jpg
 ```
 
-The backend saves the file and automatically sets `main_image` to the uploaded `/uploads/...` path.
+You can also use `destination_images` instead of `images`. The backend saves all images, automatically sets `main_image` to the first uploaded `/uploads/...` path, and returns the gallery in `images`.
 
 ## List Destinations
 

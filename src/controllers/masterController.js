@@ -25,36 +25,45 @@ async function handle(req, res, next) {
 
 function normalizeUploadedFiles(req) {
   const groupedFiles = req.files || {};
-  const file = req.file || groupedFiles.file?.[0] || null;
+  const file = req.file || groupedFiles.file?.[0] || groupedFiles.image?.[0] || groupedFiles.rib_certificate?.[0] || null;
   const packageImages = [...(groupedFiles.package_images || []), ...(groupedFiles.images || [])];
+  const destinationImages = [...(groupedFiles.destination_images || []), ...(groupedFiles.images || [])];
 
   return {
     ...groupedFiles,
     file,
+    image: file,
+    rib_certificate: groupedFiles.rib_certificate || [],
     package_images: packageImages,
-    images: packageImages,
+    destination_images: destinationImages,
+    images: groupedFiles.images || [],
   };
 }
 
 function normalizeMultipartBody(req) {
-  if (typeof req.body.data === "string") {
-    try {
-      req.body.data = JSON.parse(req.body.data);
-    } catch (error) {
-      error.statusCode = 400;
-      error.message = "Invalid JSON in data field";
-      throw error;
-    }
+  parseJsonBodyField(req, "data");
+  parseJsonBodyField(req, "filters");
+  parseJsonBodyField(req, "categories");
+  parseJsonBodyField(req, "category_ids");
+  parseJsonBodyField(req, "participants");
+}
+
+function parseJsonBodyField(req, field) {
+  if (typeof req.body[field] !== "string") {
+    return;
   }
 
-  if (typeof req.body.filters === "string") {
-    try {
-      req.body.filters = JSON.parse(req.body.filters);
-    } catch (error) {
-      error.statusCode = 400;
-      error.message = "Invalid JSON in filters field";
-      throw error;
-    }
+  const value = req.body[field].trim();
+  if (!value.startsWith("{") && !value.startsWith("[")) {
+    return;
+  }
+
+  try {
+    req.body[field] = JSON.parse(value);
+  } catch (error) {
+    error.statusCode = 400;
+    error.message = `Invalid JSON in ${field} field`;
+    throw error;
   }
 }
 

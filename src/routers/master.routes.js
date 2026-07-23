@@ -10,8 +10,11 @@ router.post(
   authOptional,
   upload.fields([
     { name: "file", maxCount: 1 },
+    { name: "image", maxCount: 1 },
+    { name: "rib_certificate", maxCount: 1 },
     { name: "images", maxCount: 10 },
     { name: "package_images", maxCount: 10 },
+    { name: "destination_images", maxCount: 10 },
   ]),
   masterController.handle
 );

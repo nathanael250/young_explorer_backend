@@ -15,6 +15,10 @@ async function submitPayment(context) {
     throw httpError(404, "Booking not found");
   }
 
+  if (booking.booking_type === "vip" && booking.booking_status === "quote_pending") {
+    throw httpError(400, "VIP booking is waiting for a price quote before payment can be submitted");
+  }
+
   const paymentProof = context.file ? `/uploads/${context.file.filename}` : data.payment_proof || null;
   const result = await insert("payments", {
     booking_id: data.booking_id,

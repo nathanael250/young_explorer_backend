@@ -5,10 +5,27 @@ CREATE TABLE users (
     email VARCHAR(150) UNIQUE,
     phone VARCHAR(30),
     password VARCHAR(255),
-    role ENUM('admin','explorer') DEFAULT 'explorer',
+    role ENUM('admin','explorer','vendor') DEFAULT 'explorer',
     profile_image VARCHAR(255),
     status ENUM('active','inactive','blocked') DEFAULT 'active',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE vendors (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    user_id BIGINT UNIQUE,
+    business_name VARCHAR(255),
+    business_phone VARCHAR(30),
+    business_email VARCHAR(150),
+    business_address VARCHAR(255),
+    rib_certificate VARCHAR(255),
+    approval_status ENUM('pending','approved','rejected','blocked') DEFAULT 'pending',
+    review_notes TEXT,
+    reviewed_by BIGINT,
+    reviewed_at TIMESTAMP NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id),
+    FOREIGN KEY (reviewed_by) REFERENCES users(id)
 );
 
 
@@ -23,7 +40,7 @@ CREATE TABLE package_durations (
 CREATE TABLE packages (
     id BIGINT PRIMARY KEY AUTO_INCREMENT,
     title VARCHAR(255),
-    slug VARCHAR(255) UNIQUE,
+    slug VARCHAR(255),
     short_description TEXT,
     full_description LONGTEXT,
     price_per_person DECIMAL(10,2) DEFAULT 0.00,
@@ -37,11 +54,29 @@ CREATE TABLE packages (
     cancellation_policy TEXT,
     status ENUM('draft','published','archived') DEFAULT 'draft',
     created_by BIGINT,
+    vendor_id BIGINT DEFAULT 0,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (duration_id)
     REFERENCES package_durations(id),
     FOREIGN KEY (created_by)
     REFERENCES users(id)
+);
+
+CREATE TABLE categories (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    name VARCHAR(100),
+    slug VARCHAR(120) UNIQUE,
+    status ENUM('active','inactive') DEFAULT 'active',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE package_categories (
+    package_id BIGINT,
+    category_id BIGINT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (package_id, category_id),
+    FOREIGN KEY (package_id) REFERENCES packages(id),
+    FOREIGN KEY (category_id) REFERENCES categories(id)
 );
 
 CREATE TABLE package_days (
@@ -82,7 +117,20 @@ CREATE TABLE destinations (
     longitude DECIMAL(11,8),
     main_image VARCHAR(255),
     status ENUM('active','inactive') DEFAULT 'active',
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    vendor_id BIGINT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (vendor_id) REFERENCES vendors(id),
+    INDEX idx_destinations_slug (slug),
+    UNIQUE KEY unique_vendor_destination_slug (vendor_id, slug)
+);
+
+CREATE TABLE destination_images (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    destination_id BIGINT,
+    image_path VARCHAR(255),
+    sort_order INT DEFAULT 1,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (destination_id) REFERENCES destinations(id)
 );
 
 CREATE TABLE package_day_destinations (
@@ -137,6 +185,7 @@ CREATE TABLE package_availability (
     total_seats INT,
     reserved_seats INT DEFAULT 0,
     confirmed_seats INT DEFAULT 0,
+    booking_cutoff_hours INT DEFAULT 24,
     remaining_seats INT GENERATED ALWAYS AS (
         total_seats - reserved_seats - confirmed_seats
     ) STORED,
@@ -158,7 +207,17 @@ CREATE TABLE bookings (
     availability_id BIGINT,
     total_people INT,
     total_amount DECIMAL(10,2),
+    special_request TEXT,
+    booking_type ENUM('standard','vip') DEFAULT 'standard',
+    vip_request_details TEXT,
+    vip_contact_name VARCHAR(150),
+    vip_contact_email VARCHAR(150),
+    vip_contact_phone VARCHAR(30),
+    vip_preferred_contact VARCHAR(30),
+    quoted_amount DECIMAL(10,2),
+    quoted_currency VARCHAR(10) DEFAULT 'USD',
     booking_status ENUM(
+        'quote_pending',
         'pending',
         'confirmed',
         'cancelled',
@@ -231,3 +290,13 @@ INSERT INTO package_durations (title, total_days, status) VALUES
 ('5 Days', 5, 'active'),
 ('7 Days', 7, 'active'),
 ('14 Days', 14, 'active');
+
+INSERT INTO categories (name, slug, status) VALUES
+('History', 'history', 'active'),
+('Art', 'art', 'active'),
+('Entertainment', 'entertainment', 'active'),
+('Science', 'science', 'active'),
+('Culture', 'culture', 'active'),
+('Nature', 'nature', 'active'),
+('Adventure', 'adventure', 'active'),
+('Education', 'education', 'active');

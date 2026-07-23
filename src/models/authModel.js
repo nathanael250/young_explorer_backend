@@ -4,6 +4,7 @@ const { query } = require("../config/database");
 const resources = require("./resources");
 const { insert, findById } = require("./dbHelpers");
 const { httpError, requireAdmin, requireFields, requireUser } = require("./modelUtils");
+const { findVendorByUserId } = require("./vendorModel");
 
 async function register(data) {
   requireFields(data, ["first_name", "last_name", "email", "password"]);
@@ -75,7 +76,10 @@ async function getCurrentUser(user) {
     throw httpError(404, "User not found");
   }
 
-  return { data: rows[0] };
+  const currentUser = rows[0];
+  const vendor = currentUser.role === "vendor" ? await findVendorByUserId(currentUser.id) : null;
+
+  return { data: { ...currentUser, vendor } };
 }
 
 async function updateProfile(context) {
