@@ -33,7 +33,8 @@ async function createBooking(context) {
   const booking = await transaction(async (connection) => {
     const [availabilityRows] = await connection.execute(
       `SELECT pa.id, pa.package_id, pa.total_seats, pa.reserved_seats, pa.confirmed_seats,
-        pa.booking_cutoff_hours, pa.status, p.status AS package_status, v.approval_status AS vendor_status,
+        pa.booking_cutoff_hours, pa.status, p.status AS package_status, p.approval_status AS package_approval_status,
+        v.approval_status AS vendor_status,
         (pa.total_seats - pa.reserved_seats - pa.confirmed_seats) AS remaining_seats
        FROM package_availability pa
        INNER JOIN packages p ON p.id = pa.package_id
@@ -48,7 +49,7 @@ async function createBooking(context) {
       throw httpError(400, "Selected departure date is not available");
     }
 
-    if (availability.package_status !== "published") {
+    if (availability.package_status !== "published" || availability.package_approval_status !== "approved") {
       throw httpError(404, "Package not found");
     }
 
@@ -132,7 +133,8 @@ async function createBooking(context) {
 async function createVipBooking(context, data, totalPeople) {
   const booking = await transaction(async (connection) => {
     const [packageRows] = await connection.execute(
-      `SELECT p.id, p.price_per_person, p.currency, p.status, p.vendor_id, v.approval_status AS vendor_status
+      `SELECT p.id, p.price_per_person, p.currency, p.status, p.approval_status, p.vendor_id,
+              v.approval_status AS vendor_status
        FROM packages p
        LEFT JOIN vendors v ON v.id = p.vendor_id
        WHERE p.id = ?
@@ -141,7 +143,7 @@ async function createVipBooking(context, data, totalPeople) {
     );
     const packageRow = packageRows[0];
 
-    if (!packageRow || packageRow.status !== "published") {
+    if (!packageRow || packageRow.status !== "published" || packageRow.approval_status !== "approved") {
       throw httpError(404, "Package not found");
     }
 

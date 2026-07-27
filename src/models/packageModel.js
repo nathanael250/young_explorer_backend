@@ -5,6 +5,7 @@ const { normalizeResourceData } = require("./resourceModel");
 const { update, findById } = require("./dbHelpers");
 const { httpError, requireAdmin, requireFields, attachUploadedMainImage, uploadedImagePath, queryAsExecute } = require("./modelUtils");
 const { requireApprovedVendor, findVendorByUserId } = require("./vendorModel");
+const { notifyNewPackage } = require("./emailModel");
 
 async function createPackageWithDays(context) {
   const vendor = await requirePackageManager(context.user);
@@ -27,8 +28,13 @@ async function createPackageWithDays(context) {
     const packageData = normalizeResourceData(resources.packages, data, context.user);
     if (vendor) {
       packageData.vendor_id = vendor.id;
+      packageData.approval_status = "approved";
+      delete packageData.approval_notes;
+      delete packageData.approved_by;
+      delete packageData.approved_at;
     } else if (!packageData.vendor_id) {
       packageData.vendor_id = 0;
+      packageData.approval_status = packageData.approval_status || "approved";
     }
     const fields = Object.keys(packageData);
     const placeholders = fields.map(() => "?").join(", ");
@@ -48,6 +54,10 @@ async function createPackageWithDays(context) {
     }
 
     return findPackageDetailsById(packageResult.insertId, connection);
+  });
+
+  notifyNewPackage(createdPackage).catch((err) => {
+    console.error("Failed to send new package notifications:", err.message);
   });
 
   return {
@@ -76,7 +86,11 @@ async function getPackageDetails(context) {
   const details = await findPackageDetailsById(packageRows[0].id);
   const vendor = context.user?.role === "vendor" ? await findVendorByUserId(context.user.id) : null;
   const isOwnerVendor = vendor && Number(details.vendor_id) === Number(vendor.id);
-  if (context.user?.role !== "admin" && !isOwnerVendor && details.status !== "published") {
+  if (
+    context.user?.role !== "admin" &&
+    !isOwnerVendor &&
+    (details.status !== "published" || details.approval_status !== "approved")
+  ) {
     throw httpError(404, "Package not found");
   }
 
@@ -107,6 +121,10 @@ async function updatePackage(context) {
     delete packageData.id;
     if (vendor) {
       delete packageData.vendor_id;
+      delete packageData.approval_status;
+      delete packageData.approval_notes;
+      delete packageData.approved_by;
+      delete packageData.approved_at;
     }
 
     if (Object.keys(packageData).length) {
@@ -128,6 +146,34 @@ async function updatePackage(context) {
   return {
     message: "Package updated",
     data: updatedPackage,
+  };
+}
+
+async function reviewPackage(context) {
+  requireAdmin(context.user);
+
+  const data = context.body.data || {};
+  requireFields(data, ["package_id", "approval_status"]);
+
+  if (!["pending", "approved", "rejected"].includes(data.approval_status)) {
+    throw httpError(400, "Invalid package approval status");
+  }
+
+  const rows = await query("SELECT id FROM packages WHERE id = ? LIMIT 1", [data.package_id]);
+  if (!rows.length) {
+    throw httpError(404, "Package not found");
+  }
+
+  await query(
+    `UPDATE packages
+     SET approval_status = ?, approval_notes = ?, approved_by = ?, approved_at = IF(? = 'approved', NOW(), approved_at)
+     WHERE id = ?`,
+    [data.approval_status, data.approval_notes || null, context.user.id, data.approval_status, data.package_id]
+  );
+
+  return {
+    message: `Package ${data.approval_status}`,
+    data: await findPackageDetailsById(data.package_id),
   };
 }
 
@@ -646,6 +692,7 @@ async function assertPackageDayDestinationOwner(packageDayDestinationId, vendor)
 module.exports = {
   createPackageWithDays,
   updatePackage,
+  reviewPackage,
   getPackageDetails,
   setPackageRules,
   createAvailability,

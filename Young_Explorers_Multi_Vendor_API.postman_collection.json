@@ -1,7 +1,7 @@
 {
   "info": {
     "name": "Young Explorers Multi-Vendor API",
-    "description": "Postman documentation for the Young Explorers command-based backend API. Most actions use POST {{base_url}}/ with a Command header. Protected requests also use Authorization: Bearer {{token}}.",
+    "description": "Postman documentation for the Young Explorers command-based multi-vendor backend API. Most actions use POST {{base_url}}/ with a Command header. Protected requests also use Authorization: Bearer {{token}}. Vendor flow: admin approves the vendor business once, then the approved vendor can create packages, attach global admin-created categories, create fixed-date availability, and publish packages by setting status to published. Public users see only packages that are published and not rejected by admin moderation.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [
@@ -559,7 +559,7 @@
               "host": ["{{base_url}}"],
               "path": [""]
             },
-            "description": "Public users see only published packages."
+            "description": "Public users see only published packages that are not rejected by admin moderation. Draft packages are hidden."
           }
         },
         {
@@ -952,11 +952,11 @@
               "host": ["{{base_url}}"],
               "path": [""]
             },
-            "description": "Approved vendors can create packages. Categories are global and admin-created. Use LIST_CATEGORIES first, then send category_ids as an array of existing active category ids."
+            "description": "Approved vendors can create packages. New packages can start as draft. Categories are global and admin-created, so use LIST_CATEGORIES first, then send category_ids as an array of existing active category ids. When ready, the vendor publishes by calling UPDATE_PACKAGE with status = published."
           }
         },
         {
-          "name": "Vendor Update Package",
+          "name": "Vendor Publish Or Update Package",
           "request": {
             "method": "POST",
             "header": [
@@ -986,7 +986,8 @@
               "raw": "{{base_url}}/",
               "host": ["{{base_url}}"],
               "path": [""]
-            }
+            },
+            "description": "Approved vendors can publish their own package by setting status to published. This makes it visible publicly as long as the package has not been rejected by admin moderation."
           }
         },
         {
@@ -1565,6 +1566,41 @@
           }
         },
         {
+          "name": "Moderate Package",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Command",
+                "value": "REVIEW_PACKAGE"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"package_id\": {{package_id}},\n  \"approval_status\": \"rejected\",\n  \"approval_notes\": \"Package needs correction before it can remain visible.\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/",
+              "host": ["{{base_url}}"],
+              "path": [""]
+            },
+            "description": "Admin moderation command. Approved vendors can publish packages themselves. Use this mainly to reject a problematic package, return a package to pending, or approve it again after corrections. Public users see packages with status = published and approval_status = approved."
+          }
+        },
+        {
           "name": "Quote VIP Booking",
           "request": {
             "method": "POST",
@@ -1805,6 +1841,73 @@
               "host": ["{{base_url}}"],
               "path": [""]
             }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Newsletter",
+      "item": [
+        {
+          "name": "Subscribe To Newsletter",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Command",
+                "value": "SUBSCRIBE_NEWSLETTER"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"subscriber@example.com\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/",
+              "host": ["{{base_url}}"],
+              "path": [""]
+            },
+            "description": "Subscribe an email to receive notifications when new packages are listed."
+          }
+        },
+        {
+          "name": "Unsubscribe From Newsletter",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Command",
+                "value": "UNSUBSCRIBE_NEWSLETTER"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"subscriber@example.com\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/",
+              "host": ["{{base_url}}"],
+              "path": [""]
+            },
+            "description": "Unsubscribe an email from receiving notifications."
           }
         }
       ]

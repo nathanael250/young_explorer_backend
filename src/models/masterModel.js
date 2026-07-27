@@ -8,6 +8,7 @@ const paymentModel = require("./paymentModel");
 const dashboardModel = require("./dashboardModel");
 const mediaModel = require("./mediaModel");
 const messageModel = require("./messageModel");
+const emailModel = require("./emailModel");
 const { httpError } = require("./modelUtils");
 
 async function handleCommand(context) {
@@ -65,6 +66,8 @@ async function handleCommand(context) {
       return packageModel.createPackageWithDays(context);
     case commands.PACKAGE_UPDATE:
       return packageModel.updatePackage(context);
+    case commands.PACKAGE_REVIEW:
+      return packageModel.reviewPackage(context);
     case commands.PACKAGE_DETAILS:
       return packageModel.getPackageDetails(context);
     case commands.PACKAGE_SET_RULES:
@@ -99,6 +102,10 @@ async function handleCommand(context) {
       return messageModel.sendContactMessage(context);
     case commands.MEDIA_UPLOAD:
       return mediaModel.uploadMedia(context);
+    case commands.NEWSLETTER_SUBSCRIBE:
+      return emailModel.subscribe(context.body.data?.email, context.user?.id);
+    case commands.NEWSLETTER_UNSUBSCRIBE:
+      return emailModel.unsubscribe(context.body.data?.email);
     default:
       throw httpError(400, `Unknown command: ${command}`);
   }

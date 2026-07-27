@@ -63,6 +63,10 @@ async function checkSchema() {
     ["packages", "price_per_person"],
     ["packages", "currency"],
     ["packages", "vendor_id"],
+    ["packages", "approval_status"],
+    ["packages", "approval_notes"],
+    ["packages", "approved_by"],
+    ["packages", "approved_at"],
     ["destinations", "vendor_id"],
     ["package_availability", "remaining_seats"],
     ["package_availability", "booking_cutoff_hours"],
@@ -76,7 +80,7 @@ async function checkSchema() {
     ["bookings", "quoted_amount"],
     ["bookings", "quoted_currency"],
   ];
-  const requiredTables = ["package_images", "destination_images", "vendors", "categories", "package_categories"];
+  const requiredTables = ["package_images", "destination_images", "vendors", "categories", "package_categories", "newsletter_subscribers"];
   const missing = [];
 
   for (const [table, column] of requiredColumns) {

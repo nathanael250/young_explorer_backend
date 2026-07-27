@@ -25,6 +25,9 @@ async function listResource(context) {
   if (config.publicStatusField && context.user?.role !== "admin" && !vendor) {
     filters[config.publicStatusField] = config.publicStatus;
   }
+  if (config.table === "packages" && context.user?.role !== "admin" && !vendor) {
+    filters.approval_status = "approved";
+  }
 
   const search = context.body.search || "";
   const page = Math.max(Number(context.body.page || 1), 1);

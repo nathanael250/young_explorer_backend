@@ -53,12 +53,18 @@ CREATE TABLE packages (
     fitness_level VARCHAR(100),
     cancellation_policy TEXT,
     status ENUM('draft','published','archived') DEFAULT 'draft',
+    approval_status ENUM('pending','approved','rejected') DEFAULT 'approved',
+    approval_notes TEXT,
+    approved_by BIGINT,
+    approved_at TIMESTAMP NULL,
     created_by BIGINT,
     vendor_id BIGINT DEFAULT 0,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (duration_id)
     REFERENCES package_durations(id),
     FOREIGN KEY (created_by)
+    REFERENCES users(id),
+    FOREIGN KEY (approved_by)
     REFERENCES users(id)
 );
 

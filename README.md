@@ -89,6 +89,8 @@ Useful commands:
 
 Resource logic lives in `src/models/masterModel.js`; controllers and routes stay thin.
 
+Approved vendors can publish their own packages by setting `status` to `published`. Public users see packages only when `status = "published"` and `approval_status = "approved"`; vendor-created packages are approved by default, while admins can still use `REVIEW_PACKAGE` to reject or moderate a package later.
+
 ## Production
 
 Run with PM2:
