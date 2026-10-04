@@ -7,6 +7,7 @@ const path = require("path");
 const masterRoutes = require("./routers/master.routes");
 
 const app = express();
+app.set("trust proxy", 1);
 const corsOrigins = process.env.CORS_ORIGIN
   ? process.env.CORS_ORIGIN.split(",").map((origin) => origin.trim()).filter(Boolean)
   : true;

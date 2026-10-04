@@ -126,18 +126,48 @@ CALL add_column_if_missing('packages', 'return_time', 'TIME NULL AFTER departure
 CALL add_column_if_missing('packages', 'supervision_details', 'TEXT NULL AFTER return_time');
 CALL add_column_if_missing('packages', 'safety_measures', 'TEXT NULL AFTER supervision_details');
 CALL add_column_if_missing('packages', 'insurance_details', 'TEXT NULL AFTER safety_measures');
+UPDATE packages
+SET status = 'draft'
+WHERE status IS NULL
+  OR status NOT IN ('draft','published','unpublished','archived');
+
+UPDATE packages
+SET approval_status = 'approved'
+WHERE approval_status IS NULL
+  OR approval_status <> 'rejected';
+
 ALTER TABLE packages
 MODIFY status ENUM('draft','published','unpublished','archived') DEFAULT 'draft',
 MODIFY approval_status ENUM('approved','rejected') DEFAULT 'approved';
 
-UPDATE packages
-SET approval_status = 'approved'
-WHERE approval_status <> 'rejected';
-
 CALL add_column_if_missing('destinations', 'description', 'LONGTEXT NULL AFTER category');
-UPDATE destinations
-SET description = COALESCE(description, full_description, short_description)
-WHERE description IS NULL;
+SET @has_destination_full_description = (
+  SELECT COUNT(*)
+  FROM INFORMATION_SCHEMA.COLUMNS
+  WHERE TABLE_SCHEMA = DATABASE()
+    AND TABLE_NAME = 'destinations'
+    AND COLUMN_NAME = 'full_description'
+);
+SET @has_destination_short_description = (
+  SELECT COUNT(*)
+  FROM INFORMATION_SCHEMA.COLUMNS
+  WHERE TABLE_SCHEMA = DATABASE()
+    AND TABLE_NAME = 'destinations'
+    AND COLUMN_NAME = 'short_description'
+);
+SET @sql = CASE
+  WHEN @has_destination_full_description > 0 AND @has_destination_short_description > 0 THEN
+    'UPDATE destinations SET description = COALESCE(description, full_description, short_description) WHERE description IS NULL'
+  WHEN @has_destination_full_description > 0 THEN
+    'UPDATE destinations SET description = COALESCE(description, full_description) WHERE description IS NULL'
+  WHEN @has_destination_short_description > 0 THEN
+    'UPDATE destinations SET description = COALESCE(description, short_description) WHERE description IS NULL'
+  ELSE
+    'SELECT 1'
+END;
+PREPARE stmt FROM @sql;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
 
 CALL add_column_if_missing('package_days', 'location_name', 'VARCHAR(255) NULL AFTER meals');
 CALL add_column_if_missing('package_days', 'latitude', 'DECIMAL(10,8) NULL AFTER location_name');

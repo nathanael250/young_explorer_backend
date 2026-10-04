@@ -418,7 +418,10 @@ function normalizeResourceData(config, data, user) {
   }
 
   if (config.table === "destinations" && !filtered.description) {
-    filtered.description = data.description || data.full_description || data.short_description;
+    const legacyDescription = data.description || data.full_description || data.short_description;
+    if (legacyDescription !== undefined) {
+      filtered.description = legacyDescription;
+    }
   }
 
   if (config.table === "bookings" && !filtered.booking_reference) {
