@@ -1,4 +1,5 @@
 const { query, transaction } = require("../config/database");
+const crypto = require("crypto");
 const { httpError, requireAdmin, requireFields, requireUser, queryAsExecute } = require("./modelUtils");
 const { findVendorByUserId, requireApprovedVendor } = require("./vendorModel");
 
@@ -80,37 +81,57 @@ async function createBooking(context) {
     }
 
     const totalAmount = Number(packageRow.price_per_person || 0) * totalPeople;
-    const bookingReference = `YE-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+    const bookingReference = `JT-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+    const ticket = createTicketIdentity();
 
     const [bookingResult] = await connection.execute(
       `INSERT INTO bookings
-        (booking_reference, user_id, package_id, availability_id, total_people, total_amount, special_request, booking_type, booking_status, payment_status)
-       VALUES (?, ?, ?, ?, ?, ?, ?, 'standard', 'pending', 'unpaid')`,
+        (booking_reference, ticket_number, ticket_token, ticket_issued_at, user_id, package_id, availability_id, total_people, total_amount, special_request,
+         authorized_guardian_name, authorized_guardian_phone, parent_notes, terms_accepted, notification_channel,
+         booking_type, booking_status, payment_status)
+       VALUES (?, ?, ?, NOW(), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'standard', 'pending', 'unpaid')`,
       [
         bookingReference,
+        ticket.ticketNumber,
+        ticket.ticketToken,
         context.user.id,
         data.package_id,
         data.availability_id,
         totalPeople,
         totalAmount,
         data.special_request || null,
+        data.authorized_guardian_name || null,
+        data.authorized_guardian_phone || null,
+        data.parent_notes || null,
+        data.terms_accepted ? 1 : 0,
+        data.notification_channel || "email",
       ]
     );
 
+    await verifyParticipantChildren(connection, data.participants || [], context.user.id);
     for (const participant of data.participants || []) {
       await connection.execute(
         `INSERT INTO booking_participants
-          (booking_id, first_name, last_name, gender, date_of_birth, passport_number, nationality, emergency_contact)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+          (booking_id, child_id, first_name, last_name, gender, age, passport_number, nationality,
+           emergency_contact, emergency_contact_name, emergency_contact_relationship, medical_notes, dietary_requirements,
+           accessibility_requirements, special_instructions)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         [
           bookingResult.insertId,
+          participant.child_id || null,
           participant.first_name || null,
           participant.last_name || null,
           participant.gender || null,
-          participant.date_of_birth || null,
+          participant.age || null,
           participant.passport_number || null,
           participant.nationality || null,
           participant.emergency_contact || null,
+          participant.emergency_contact_name || null,
+          participant.emergency_contact_relationship || null,
+          participant.medical_notes || null,
+          participant.dietary_requirements || null,
+          participant.accessibility_requirements || null,
+          participant.special_instructions || null,
         ]
       );
     }
@@ -151,20 +172,29 @@ async function createVipBooking(context, data, totalPeople) {
       throw httpError(400, "This vendor is not accepting VIP requests");
     }
 
-    const bookingReference = `YE-VIP-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+    const bookingReference = `JT-VIP-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+    const ticket = createTicketIdentity("VIP");
     const [bookingResult] = await connection.execute(
       `INSERT INTO bookings
-        (booking_reference, user_id, package_id, availability_id, total_people, total_amount, special_request,
+        (booking_reference, ticket_number, ticket_token, ticket_issued_at, user_id, package_id, availability_id, total_people, total_amount, special_request,
+         authorized_guardian_name, authorized_guardian_phone, parent_notes, terms_accepted, notification_channel,
          booking_type, vip_request_details, vip_contact_name, vip_contact_email, vip_contact_phone, vip_preferred_contact,
          quoted_amount, quoted_currency, booking_status, payment_status)
-       VALUES (?, ?, ?, ?, ?, 0, ?, 'vip', ?, ?, ?, ?, ?, NULL, ?, 'quote_pending', 'unpaid')`,
+       VALUES (?, ?, ?, NOW(), ?, ?, ?, ?, 0, ?, ?, ?, ?, ?, ?, 'vip', ?, ?, ?, ?, ?, NULL, ?, 'quote_pending', 'unpaid')`,
       [
         bookingReference,
+        ticket.ticketNumber,
+        ticket.ticketToken,
         context.user.id,
         data.package_id,
         data.availability_id || null,
         totalPeople,
         data.special_request || null,
+        data.authorized_guardian_name || null,
+        data.authorized_guardian_phone || null,
+        data.parent_notes || null,
+        data.terms_accepted ? 1 : 0,
+        data.notification_channel || "email",
         data.vip_request_details,
         data.vip_contact_name || null,
         data.vip_contact_email || null,
@@ -174,20 +204,30 @@ async function createVipBooking(context, data, totalPeople) {
       ]
     );
 
+    await verifyParticipantChildren(connection, data.participants || [], context.user.id);
     for (const participant of data.participants || []) {
       await connection.execute(
         `INSERT INTO booking_participants
-          (booking_id, first_name, last_name, gender, date_of_birth, passport_number, nationality, emergency_contact)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+          (booking_id, child_id, first_name, last_name, gender, age, passport_number, nationality,
+           emergency_contact, emergency_contact_name, emergency_contact_relationship, medical_notes, dietary_requirements,
+           accessibility_requirements, special_instructions)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         [
           bookingResult.insertId,
+          participant.child_id || null,
           participant.first_name || null,
           participant.last_name || null,
           participant.gender || null,
-          participant.date_of_birth || null,
+          participant.age || null,
           participant.passport_number || null,
           participant.nationality || null,
           participant.emergency_contact || null,
+          participant.emergency_contact_name || null,
+          participant.emergency_contact_relationship || null,
+          participant.medical_notes || null,
+          participant.dietary_requirements || null,
+          participant.accessibility_requirements || null,
+          participant.special_instructions || null,
         ]
       );
     }
@@ -302,6 +342,46 @@ async function markVipBookingPaid(context) {
   };
 }
 
+async function getBookingTicket(context) {
+  requireUser(context.user);
+
+  const data = context.body.data || {};
+  const ticketNumber = data.ticket_number || context.body.ticket_number;
+  const ticketToken = data.ticket_token || context.body.ticket_token;
+
+  if (!ticketNumber && !ticketToken) {
+    throw httpError(400, "Ticket number or ticket token is required");
+  }
+
+  const rows = await query(
+    `SELECT b.id, b.user_id, p.vendor_id
+     FROM bookings b
+     INNER JOIN packages p ON p.id = b.package_id
+     WHERE (${ticketNumber ? "b.ticket_number = ?" : "1 = 0"})
+        OR (${ticketToken ? "b.ticket_token = ?" : "1 = 0"})
+     LIMIT 1`,
+    [ticketNumber, ticketToken].filter(Boolean)
+  );
+  const booking = rows[0];
+
+  if (!booking) {
+    throw httpError(404, "Ticket not found");
+  }
+
+  if (context.user.role === "vendor") {
+    const vendor = await requireApprovedVendor(context.user);
+    if (Number(booking.vendor_id) !== Number(vendor.id)) {
+      throw httpError(403, "You are not allowed to scan this ticket");
+    }
+  } else if (context.user.role !== "admin" && Number(booking.user_id) !== Number(context.user.id)) {
+    throw httpError(403, "You are not allowed to view this ticket");
+  }
+
+  return {
+    data: await findBookingById(booking.id),
+  };
+}
+
 async function getBookingManagerVendor(user) {
   if (user?.role === "vendor") {
     return requireApprovedVendor(user);
@@ -309,6 +389,57 @@ async function getBookingManagerVendor(user) {
 
   requireAdmin(user);
   return null;
+}
+
+function createTicketIdentity(prefix = "JT") {
+  const date = new Date();
+  const yy = String(date.getUTCFullYear()).slice(-2);
+  const mm = String(date.getUTCMonth() + 1).padStart(2, "0");
+  const dd = String(date.getUTCDate()).padStart(2, "0");
+  const sequence = Math.floor(1000 + Math.random() * 9000);
+  const suffix = crypto.randomBytes(2).toString("hex").toUpperCase();
+
+  return {
+    ticketNumber: `${prefix}${yy}${mm}${dd}-${sequence}-${suffix}`,
+    ticketToken: crypto.randomBytes(24).toString("hex"),
+  };
+}
+
+function buildTicketPayload(booking, participants) {
+  if (!booking.ticket_number || !booking.ticket_token) {
+    return null;
+  }
+
+  return {
+    type: "JUNIORTRAVELS_TICKET",
+    version: 1,
+    ticket_number: booking.ticket_number,
+    ticket_token: booking.ticket_token,
+    booking_reference: booking.booking_reference,
+    booking_id: booking.id,
+    package_id: booking.package_id,
+    availability_id: booking.availability_id,
+    passenger_count: participants.length || Number(booking.total_people || 0),
+  };
+}
+
+async function verifyParticipantChildren(connection, participants, userId) {
+  const childIds = [...new Set(participants.map((participant) => Number(participant.child_id)).filter(Boolean))];
+  if (!childIds.length) {
+    return;
+  }
+
+  const placeholders = childIds.map(() => "?").join(", ");
+  const [rows] = await connection.execute(
+    `SELECT id FROM children WHERE user_id = ? AND id IN (${placeholders})`,
+    [userId, ...childIds]
+  );
+  const ownedChildIds = new Set(rows.map((row) => Number(row.id)));
+  const invalidChildIds = childIds.filter((childId) => !ownedChildIds.has(childId));
+
+  if (invalidChildIds.length) {
+    throw httpError(403, "One or more child profiles do not belong to this parent");
+  }
 }
 
 async function cancelBooking(context) {
@@ -397,7 +528,9 @@ async function expirePendingBookings(context) {
 async function findBookingById(bookingId, connection = null) {
   const runner = connection || { execute: (sql, params) => queryAsExecute(query, sql, params) };
   const [bookingRows] = await runner.execute(
-    `SELECT b.*, p.title AS package_title, pa.start_date, pa.end_date
+    `SELECT b.*, p.title AS package_title, p.location_name, p.meeting_point, p.dropoff_location, p.dropoff_time,
+            p.pickup_location, p.pickup_time, p.start_time, p.departure_time, p.return_time,
+            pa.start_date, pa.end_date
      FROM bookings b
      LEFT JOIN packages p ON p.id = b.package_id
      LEFT JOIN package_availability pa ON pa.id = b.availability_id
@@ -418,6 +551,21 @@ async function findBookingById(bookingId, connection = null) {
 
   return {
     ...booking,
+    ticket: {
+      ticket_number: booking.ticket_number,
+      ticket_token: booking.ticket_token,
+      issued_at: booking.ticket_issued_at,
+      qr_payload: buildTicketPayload(booking, participants),
+      qr_payload_json: JSON.stringify(buildTicketPayload(booking, participants)),
+      display: {
+        passenger: "Young Explorer",
+        date: booking.start_date,
+        boarding_time: booking.departure_time || booking.start_time || booking.dropoff_time,
+        from: booking.meeting_point || booking.dropoff_location,
+        to: booking.location_name || booking.package_title,
+        route: `${booking.meeting_point || booking.dropoff_location || ""}${booking.location_name ? ` -> ${booking.location_name}` : ""}`,
+      },
+    },
     participants,
     payments,
   };
@@ -437,6 +585,7 @@ module.exports = {
   createBooking,
   quoteVipBooking,
   markVipBookingPaid,
+  getBookingTicket,
   cancelBooking,
   expirePendingBookings,
   findBookingById,

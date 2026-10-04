@@ -8,8 +8,14 @@ async function getDashboardStats(context) {
     query(`
       SELECT
         (SELECT COUNT(*) FROM packages) AS total_packages,
+        (SELECT COUNT(*) FROM packages WHERE status = 'published' AND approval_status = 'approved') AS active_packages,
+        (SELECT COUNT(*) FROM packages WHERE approval_status = 'rejected') AS rejected_packages,
         (SELECT COUNT(*) FROM bookings) AS total_bookings,
+        (SELECT COALESCE(SUM(total_people), 0) FROM bookings WHERE booking_status IN ('pending','confirmed')) AS children_participating,
         (SELECT COUNT(*) FROM users) AS total_users,
+        (SELECT COUNT(*) FROM users WHERE role IN ('parent','explorer')) AS total_parents,
+        (SELECT COUNT(*) FROM vendors WHERE approval_status = 'approved') AS active_vendors,
+        (SELECT COUNT(*) FROM vendors WHERE approval_status IN ('pending','under_review','changes_requested')) AS pending_vendor_applications,
         (SELECT COUNT(*) FROM payments) AS total_payments,
         (SELECT COUNT(*) FROM messages) AS total_messages
     `),

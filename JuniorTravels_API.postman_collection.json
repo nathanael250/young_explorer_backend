@@ -1,0 +1,2702 @@
+{
+  "info": {
+    "name": "JuniorTravels API",
+    "description": "Postman collection for the JuniorTravels command-based backend. Most requests use POST {{base_url}}/ with a Command header. Authenticated requests use Authorization: Bearer {{parent_token}}, {{vendor_token}}, or {{admin_token}}. The collection covers public discovery, parent accounts and children, vendor onboarding, package management, itinerary, tour occurrences, booking, payments, booking updates, and admin review flows.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:5000"
+    },
+    {
+      "key": "admin_token",
+      "value": ""
+    },
+    {
+      "key": "parent_token",
+      "value": ""
+    },
+    {
+      "key": "vendor_token",
+      "value": ""
+    },
+    {
+      "key": "admin_email",
+      "value": "admin@juniortravels.test"
+    },
+    {
+      "key": "parent_email",
+      "value": "parent@juniortravels.test"
+    },
+    {
+      "key": "vendor_email",
+      "value": "vendor@juniortravels.test"
+    },
+    {
+      "key": "password",
+      "value": "password123"
+    },
+    {
+      "key": "admin_registration_token",
+      "value": "replace_with_ADMIN_REGISTRATION_TOKEN"
+    },
+    {
+      "key": "child_id",
+      "value": "1"
+    },
+    {
+      "key": "vendor_id",
+      "value": "1"
+    },
+    {
+      "key": "category_id",
+      "value": "1"
+    },
+    {
+      "key": "duration_id",
+      "value": "1"
+    },
+    {
+      "key": "destination_id",
+      "value": "1"
+    },
+    {
+      "key": "package_id",
+      "value": "1"
+    },
+    {
+      "key": "package_slug",
+      "value": "akagera-junior-wildlife-explorer"
+    },
+    {
+      "key": "package_day_id",
+      "value": "1"
+    },
+    {
+      "key": "itinerary_destination_id",
+      "value": "1"
+    },
+    {
+      "key": "availability_id",
+      "value": "1"
+    },
+    {
+      "key": "booking_id",
+      "value": "1"
+    },
+    {
+      "key": "payment_id",
+      "value": "1"
+    },
+    {
+      "key": "booking_update_id",
+      "value": "1"
+    },
+    {
+      "key": "message_id",
+      "value": "1"
+    },
+    {
+      "key": "media_id",
+      "value": "1"
+    },
+    {
+      "key": "ticket_number",
+      "value": ""
+    },
+    {
+      "key": "ticket_token",
+      "value": ""
+    }
+  ],
+  "item": [
+    {
+      "name": "00 Health",
+      "item": [
+        {
+          "name": "GET /health",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/health",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "health"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Command HEALTH",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Command",
+                "value": "HEALTH"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                ""
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "01 Authentication",
+      "item": [
+        {
+          "name": "Register Parent",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();",
+                  "if (json?.data?.token) pm.collectionVariables.set('parent_token', json.data.token);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Command",
+                "value": "REGISTER"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"first_name\": \"Aline\",\n  \"last_name\": \"Mutesi\",\n  \"email\": \"{{parent_email}}\",\n  \"phone\": \"+250788000001\",\n  \"password\": \"{{password}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                ""
+              ]
+            }
+          }
+        },
+        {
+          "name": "Register Admin",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();",
+                  "if (json?.data?.token) pm.collectionVariables.set('admin_token', json.data.token);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Command",
+                "value": "REGISTER"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"first_name\": \"Admin\",\n  \"last_name\": \"User\",\n  \"email\": \"{{admin_email}}\",\n  \"phone\": \"+250788000002\",\n  \"password\": \"{{password}}\",\n  \"role\": \"admin\",\n  \"admin_registration_token\": \"{{admin_registration_token}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                ""
+              ]
+            }
+          }
+        },
+        {
+          "name": "Login Parent",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();",
+                  "if (json?.data?.token) pm.collectionVariables.set('parent_token', json.data.token);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Command",
+                "value": "LOGIN"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{parent_email}}\",\n  \"password\": \"{{password}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                ""
+              ]
+            }
+          }
+        },
+        {
+          "name": "Login Admin",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();",
+                  "if (json?.data?.token) pm.collectionVariables.set('admin_token', json.data.token);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Command",
+                "value": "LOGIN"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{admin_email}}\",\n  \"password\": \"{{password}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                ""
+              ]
+            }
+          }
+        },
+        {
+          "name": "Current User",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Command",
+                "value": "ME"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{parent_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                ""
+              ]
+            }
+          }
+        },
+        {
+          "name": "Update Profile",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Command",
+                "value": "UPDATE_PROFILE"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{parent_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"phone\": \"+250788999999\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                ""
+              ]
+            }
+          }
+        },
+        {
+          "name": "Change Password",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Command",
+                "value": "CHANGE_PASSWORD"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{parent_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"current_password\": \"{{password}}\",\n  \"new_password\": \"{{password}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                ""
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "02 Public Discovery",
+      "item": [
+        {
+          "name": "List Packages",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Command",
+                "value": "LIST_PACKAGES"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"page\": 1,\n  \"limit\": 20,\n  \"search\": \"\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                ""
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Package Details By Slug",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Command",
+                "value": "GET_PACKAGE_DETAILS"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"slug\": \"{{package_slug}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                ""
+              ]
+            }
+          }
+        },
+        {
+          "name": "List Destinations",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Command",
+                "value": "LIST_DESTINATIONS"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"page\": 1,\n  \"limit\": 20,\n  \"search\": \"Kigali\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                ""
+              ]
+            }
+          }
+        },
+        {
+          "name": "List Durations",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Command",
+                "value": "LIST_DURATIONS"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"page\": 1,\n  \"limit\": 20\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                ""
+              ]
+            }
+          }
+        },
+        {
+          "name": "List Categories",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Command",
+                "value": "LIST_CATEGORIES"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"page\": 1,\n  \"limit\": 20\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                ""
+              ]
+            }
+          }
+        },
+        {
+          "name": "Send Contact Message",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Command",
+                "value": "SEND_CONTACT_MESSAGE"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"full_name\": \"Visitor Name\",\n  \"email\": \"visitor@example.com\",\n  \"subject\": \"Tour inquiry\",\n  \"message\": \"I would like to know more about JuniorTravels packages.\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                ""
+              ]
+            }
+          }
+        },
+        {
+          "name": "Subscribe Newsletter",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Command",
+                "value": "SUBSCRIBE_NEWSLETTER"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"visitor@example.com\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                ""
+              ]
+            }
+          }
+        },
+        {
+          "name": "Unsubscribe Newsletter",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Command",
+                "value": "UNSUBSCRIBE_NEWSLETTER"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"visitor@example.com\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                ""
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "03 Parent Children",
+      "item": [
+        {
+          "name": "Create Child",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();",
+                  "if (json?.data?.id) pm.collectionVariables.set('child_id', json.data.id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Command",
+                "value": "CREATE_CHILD"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{parent_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"first_name\": \"Keza\",\n  \"last_name\": \"Mutesi\",\n  \"age\": 10,\n  \"gender\": \"female\",\n  \"medical_notes\": \"No known allergies\",\n  \"dietary_requirements\": \"No pork\",\n  \"accessibility_requirements\": null,\n  \"status\": \"active\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                ""
+              ]
+            }
+          }
+        },
+        {
+          "name": "List Children",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Command",
+                "value": "LIST_CHILDREN"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{parent_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"page\": 1,\n  \"limit\": 20\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                ""
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Child",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Command",
+                "value": "GET_CHILD"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{parent_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id\": {{child_id}}\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                ""
+              ]
+            }
+          }
+        },
+        {
+          "name": "Update Child",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Command",
+                "value": "UPDATE_CHILD"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{parent_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id\": {{child_id}},\n  \"dietary_requirements\": \"Vegetarian lunch preferred\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                ""
+              ]
+            }
+          }
+        },
+        {
+          "name": "Delete Child",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Command",
+                "value": "DELETE_CHILD"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{parent_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id\": {{child_id}}\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                ""
+              ]
+            },
+            "description": "Use carefully. For most testing, update status to inactive instead of deleting."
+          }
+        }
+      ]
+    },
+    {
+      "name": "04 Vendor Onboarding",
+      "item": [
+        {
+          "name": "Register Vendor",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();",
+                  "if (json?.data?.token) pm.collectionVariables.set('vendor_token', json.data.token);",
+                  "if (json?.data?.vendor?.id) pm.collectionVariables.set('vendor_id', json.data.vendor.id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Command",
+                "value": "REGISTER_VENDOR"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"first_name\": \"Vendor\",\n  \"last_name\": \"Manager\",\n  \"email\": \"{{vendor_email}}\",\n  \"phone\": \"+250788000003\",\n  \"password\": \"{{password}}\",\n  \"business_name\": \"Akagera Junior Adventures\",\n  \"business_type\": \"Tour operator\",\n  \"registration_number\": \"RDB-12345\",\n  \"business_phone\": \"+250788000004\",\n  \"business_email\": \"operations@akagerajunior.test\",\n  \"business_address\": \"Kigali, Rwanda\",\n  \"description\": \"Child-friendly educational trips and wildlife learning activities.\",\n  \"rdb_certificate\": \"/uploads/example-rdb-certificate.pdf\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                ""
+              ]
+            },
+            "description": "The backend also supports multipart/form-data with rdb_certificate as a file."
+          }
+        },
+        {
+          "name": "Login Vendor",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();",
+                  "if (json?.data?.token) pm.collectionVariables.set('vendor_token', json.data.token);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Command",
+                "value": "LOGIN"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{vendor_email}}\",\n  \"password\": \"{{password}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                ""
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Vendor Profile",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Command",
+                "value": "GET_VENDOR"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{vendor_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                ""
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "05 Admin",
+      "item": [
+        {
+          "name": "List Vendors",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Command",
+                "value": "LIST_VENDORS"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"page\": 1,\n  \"limit\": 20,\n  \"filters\": {\n    \"approval_status\": \"pending\"\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                ""
+              ]
+            }
+          }
+        },
+        {
+          "name": "Review Vendor",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Command",
+                "value": "REVIEW_VENDOR"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"vendor_id\": {{vendor_id}},\n  \"approval_status\": \"approved\",\n  \"review_notes\": \"Approved for testing.\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                ""
+              ]
+            }
+          }
+        },
+        {
+          "name": "Dashboard Stats",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Command",
+                "value": "GET_DASHBOARD_STATS"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                ""
+              ]
+            }
+          }
+        },
+        {
+          "name": "Set User Status",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Command",
+                "value": "SET_USER_STATUS"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"user_id\": 1,\n  \"status\": \"active\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                ""
+              ]
+            }
+          }
+        },
+        {
+          "name": "List Users",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Command",
+                "value": "LIST_USERS"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"page\": 1,\n  \"limit\": 20\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                ""
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "06 Destinations Categories Durations",
+      "item": [
+        {
+          "name": "Create Category",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();",
+                  "if (json?.data?.id) pm.collectionVariables.set('category_id', json.data.id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Command",
+                "value": "CREATE_CATEGORY"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Wildlife\",\n  \"status\": \"active\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                ""
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create Duration",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();",
+                  "if (json?.data?.id) pm.collectionVariables.set('duration_id', json.data.id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Command",
+                "value": "CREATE_DURATION"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"1 Day\",\n  \"total_days\": 1,\n  \"status\": \"active\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                ""
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create Destination",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();",
+                  "if (json?.data?.id) pm.collectionVariables.set('destination_id', json.data.id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Command",
+                "value": "CREATE_DESTINATION"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Akagera National Park\",\n  \"province\": \"Eastern Province\",\n  \"district\": \"Kayonza\",\n  \"category\": \"wildlife\",\n  \"description\": \"A protected savannah park with educational wildlife experiences for children.\",\n  \"best_time_to_visit\": \"All year\",\n  \"entry_fee\": 0,\n  \"latitude\": -1.8796,\n  \"longitude\": 30.7036,\n  \"status\": \"active\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                ""
+              ]
+            }
+          }
+        },
+        {
+          "name": "Update Destination",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Command",
+                "value": "UPDATE_DESTINATION"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id\": {{destination_id}},\n  \"description\": \"Updated child-friendly wildlife learning destination.\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                ""
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "07 Packages Itinerary Availability",
+      "item": [
+        {
+          "name": "Create Package",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();",
+                  "if (json?.data?.id) pm.collectionVariables.set('package_id', json.data.id);",
+                  "if (json?.data?.slug) pm.collectionVariables.set('package_slug', json.data.slug);",
+                  "if (json?.data?.days?.[0]?.id) pm.collectionVariables.set('package_day_id', json.data.days[0].id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Command",
+                "value": "CREATE_PACKAGE"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{vendor_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Akagera Junior Wildlife Explorer\",\n  \"short_description\": \"A safe wildlife learning day for children.\",\n  \"full_description\": \"Children discover wildlife, conservation, and teamwork with trained guides.\",\n  \"duration_id\": {{duration_id}},\n  \"category_ids\": [{{category_id}}],\n  \"price_per_person\": 25000,\n  \"currency\": \"RWF\",\n  \"status\": \"draft\",\n  \"location_name\": \"Akagera National Park\",\n  \"location_address\": \"Kayonza, Rwanda\",\n  \"meeting_point\": \"Kigali Convention Centre parking\",\n  \"minimum_age\": 8,\n  \"maximum_age\": 14,\n  \"minimum_participants\": 5,\n  \"maximum_participants\": 30,\n  \"check_in_time\": \"06:30:00\",\n  \"start_time\": \"07:00:00\",\n  \"end_time\": \"17:30:00\",\n  \"dropoff_location\": \"Kigali Convention Centre parking\",\n  \"dropoff_time\": \"06:30:00\",\n  \"dropoff_contact_name\": \"JuniorTravels Coordinator\",\n  \"dropoff_contact_phone\": \"+250788111222\",\n  \"dropoff_instructions\": \"Parents should arrive 30 minutes before departure.\",\n  \"pickup_location\": \"Kigali Convention Centre parking\",\n  \"pickup_time\": \"17:30:00\",\n  \"pickup_contact_name\": \"JuniorTravels Coordinator\",\n  \"pickup_contact_phone\": \"+250788111222\",\n  \"pickup_instructions\": \"Guardian ID may be requested at pickup.\",\n  \"transportation_included\": 1,\n  \"transportation_provider\": \"Licensed child-safe transport partner\",\n  \"vehicle_type\": \"Coaster bus\",\n  \"departure_point\": \"Kigali Convention Centre parking\",\n  \"departure_time\": \"07:00:00\",\n  \"return_time\": \"17:30:00\",\n  \"supervision_details\": \"Children are supervised by trained coordinators and park guides.\",\n  \"safety_measures\": \"Attendance checks, emergency contact, first aid kit, and supervised movement.\",\n  \"insurance_details\": \"Basic activity insurance included.\",\n  \"emergency_contact\": \"+250788111222\",\n  \"age_range\": \"8-14\",\n  \"cancellation_policy\": \"Full refund until 48 hours before departure.\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                ""
+              ]
+            }
+          }
+        },
+        {
+          "name": "Set Package Rules",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Command",
+                "value": "SET_PACKAGE_RULES"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{vendor_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"package_id\": {{package_id}},\n  \"inclusions\": [\"Transportation\", \"Lunch\", \"Water\", \"Guide\", \"Activity materials\", \"Insurance\"],\n  \"exclusions\": [\"Personal shopping\", \"Extra snacks\"],\n  \"required_items\": [\"Comfortable shoes\", \"Hat\", \"Water bottle\", \"Jacket\"],\n  \"not_allowed_items\": [\"Sharp objects\", \"Unapproved medication without parent note\"]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                ""
+              ]
+            }
+          }
+        },
+        {
+          "name": "Update Itinerary Day",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Command",
+                "value": "UPDATE_ITINERARY_DAY"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{vendor_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"package_id\": {{package_id}},\n  \"day_number\": 1,\n  \"title\": \"Wildlife learning day\",\n  \"summary\": \"Check-in, travel to Akagera, guided wildlife education, lunch, and return to Kigali.\",\n  \"location_name\": \"Akagera National Park\",\n  \"latitude\": -1.8796,\n  \"longitude\": 30.7036,\n  \"meals\": \"Lunch\",\n  \"start_time\": \"07:00:00\",\n  \"end_time\": \"17:30:00\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                ""
+              ]
+            }
+          }
+        },
+        {
+          "name": "Add Itinerary Destination",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();",
+                  "if (json?.data?.id) pm.collectionVariables.set('itinerary_destination_id', json.data.id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Command",
+                "value": "ADD_ITINERARY_DESTINATION"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{vendor_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"package_day_id\": {{package_day_id}},\n  \"destination_id\": {{destination_id}},\n  \"visit_order\": 1,\n  \"activity_title\": \"Guided wildlife learning activity\",\n  \"activity_description\": \"Children learn about conservation and safe wildlife observation.\",\n  \"location_name\": \"Akagera Education Area\",\n  \"latitude\": -1.8796,\n  \"longitude\": 30.7036,\n  \"arrival_time\": \"09:30:00\",\n  \"departure_time\": \"15:30:00\",\n  \"notes\": \"Group remains with guides at all times.\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                ""
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create Availability / Tour Occurrence",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();",
+                  "if (json?.data?.id) pm.collectionVariables.set('availability_id', json.data.id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Command",
+                "value": "CREATE_PACKAGE_AVAILABILITY"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{vendor_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"package_id\": {{package_id}},\n  \"start_date\": \"2026-10-24\",\n  \"end_date\": \"2026-10-24\",\n  \"total_seats\": 30,\n  \"booking_cutoff_hours\": 24,\n  \"status\": \"available\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                ""
+              ]
+            }
+          }
+        },
+        {
+          "name": "Update Availability Operation Status",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Command",
+                "value": "UPDATE_PACKAGE_AVAILABILITY"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{vendor_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id\": {{availability_id}},\n  \"operation_status\": \"check_in_open\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                ""
+              ]
+            }
+          }
+        },
+        {
+          "name": "Publish Package",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Command",
+                "value": "UPDATE_PACKAGE"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{vendor_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id\": {{package_id}},\n  \"status\": \"published\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                ""
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "08 Booking Payment Updates",
+      "item": [
+        {
+          "name": "Create Booking",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();",
+                  "if (json?.data?.id) pm.collectionVariables.set('booking_id', json.data.id);",
+                  "if (json?.data?.ticket?.ticket_number) pm.collectionVariables.set('ticket_number', json.data.ticket.ticket_number);",
+                  "if (json?.data?.ticket?.ticket_token) pm.collectionVariables.set('ticket_token', json.data.ticket.ticket_token);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Command",
+                "value": "CREATE_BOOKING"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{parent_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"package_id\": {{package_id}},\n  \"availability_id\": {{availability_id}},\n  \"total_people\": 1,\n  \"authorized_guardian_name\": \"Aline Mutesi\",\n  \"authorized_guardian_phone\": \"+250788000001\",\n  \"parent_notes\": \"Please call me if plans change.\",\n  \"terms_accepted\": true,\n  \"notification_channel\": \"email\",\n  \"participants\": [\n    {\n      \"child_id\": {{child_id}},\n      \"first_name\": \"Keza\",\n      \"last_name\": \"Mutesi\",\n      \"gender\": \"female\",\n      \"age\": 10,\n      \"age\": 10,\n      \"nationality\": \"Rwandan\",\n      \"emergency_contact\": \"+250788000001\",\n      \"emergency_contact_name\": \"Aline Mutesi\",\n      \"emergency_contact_relationship\": \"Mother\",\n      \"medical_notes\": \"No known allergies\",\n      \"dietary_requirements\": \"Vegetarian lunch preferred\",\n      \"accessibility_requirements\": null,\n      \"special_instructions\": \"Please remind child to drink water.\"\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                ""
+              ]
+            }
+          }
+        },
+        {
+          "name": "List Parent Bookings",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Command",
+                "value": "LIST_BOOKINGS"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{parent_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"page\": 1,\n  \"limit\": 20\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                ""
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Booking",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Command",
+                "value": "GET_BOOKING"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{parent_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id\": {{booking_id}}\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                ""
+              ]
+            }
+          }
+        },
+        {
+          "name": "List Vendor Bookings",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Command",
+                "value": "LIST_BOOKINGS"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{vendor_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"page\": 1,\n  \"limit\": 20,\n  \"filters\": {\n    \"package_id\": {{package_id}}\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                ""
+              ]
+            }
+          }
+        },
+        {
+          "name": "Submit Payment Proof",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();",
+                  "if (json?.data?.id) pm.collectionVariables.set('payment_id', json.data.id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Command",
+                "value": "SUBMIT_PAYMENT"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{parent_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"booking_id\": {{booking_id}},\n  \"amount\": 25000,\n  \"payment_method\": \"mobile_money\",\n  \"transaction_reference\": \"MOMO-JT-1001\",\n  \"payment_proof\": \"/uploads/example-payment-proof.jpg\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                ""
+              ]
+            },
+            "description": "The backend also supports multipart/form-data with file for payment proof."
+          }
+        },
+        {
+          "name": "Verify Payment",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Command",
+                "value": "VERIFY_PAYMENT"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"payment_id\": {{payment_id}},\n  \"status\": \"verified\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                ""
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create Booking Update",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();",
+                  "if (json?.data?.id) pm.collectionVariables.set('booking_update_id', json.data.id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Command",
+                "value": "CREATE_BOOKING_UPDATE"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{vendor_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"booking_id\": {{booking_id}},\n  \"update_type\": \"departure\",\n  \"title\": \"The group has departed Kigali\",\n  \"message\": \"The children have checked in and the group has departed for Akagera.\",\n  \"sent_channel\": \"in_app\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                ""
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Booking Ticket / Scan QR",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Command",
+                "value": "GET_BOOKING_TICKET"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{vendor_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"ticket_token\": \"{{ticket_token}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                ""
+              ]
+            },
+            "description": "Use the ticket_token from the QR payload. Vendor sees the booking only when the ticket belongs to one of their packages."
+          }
+        },
+        {
+          "name": "List Booking Updates",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Command",
+                "value": "LIST_BOOKING_UPDATES"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{parent_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"page\": 1,\n  \"limit\": 20,\n  \"filters\": {\n    \"booking_id\": {{booking_id}}\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                ""
+              ]
+            }
+          }
+        },
+        {
+          "name": "Cancel Booking",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Command",
+                "value": "CANCEL_BOOKING"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{parent_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id\": {{booking_id}}\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                ""
+              ]
+            },
+            "description": "Run this near the end of testing because it changes booking state."
+          }
+        }
+      ]
+    },
+    {
+      "name": "09 VIP Booking",
+      "item": [
+        {
+          "name": "Create VIP Booking Request",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();",
+                  "if (json?.data?.id) pm.collectionVariables.set('booking_id', json.data.id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Command",
+                "value": "CREATE_BOOKING"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{parent_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"package_id\": {{package_id}},\n  \"booking_type\": \"vip\",\n  \"total_people\": 10,\n  \"vip_request_details\": \"Private school group trip with custom pickup time.\",\n  \"vip_contact_name\": \"Aline Mutesi\",\n  \"vip_contact_email\": \"{{parent_email}}\",\n  \"vip_contact_phone\": \"+250788000001\",\n  \"vip_preferred_contact\": \"phone\",\n  \"authorized_guardian_name\": \"Aline Mutesi\",\n  \"authorized_guardian_phone\": \"+250788000001\",\n  \"terms_accepted\": true,\n  \"notification_channel\": \"email\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                ""
+              ]
+            }
+          }
+        },
+        {
+          "name": "Quote VIP Booking",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Command",
+                "value": "QUOTE_VIP_BOOKING"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{vendor_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"booking_id\": {{booking_id}},\n  \"quoted_amount\": 300000,\n  \"quoted_currency\": \"RWF\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                ""
+              ]
+            }
+          }
+        },
+        {
+          "name": "Mark VIP Booking Paid",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Command",
+                "value": "MARK_VIP_BOOKING_PAID"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{vendor_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"booking_id\": {{booking_id}},\n  \"paid_amount\": 300000,\n  \"currency\": \"RWF\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                ""
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "10 Admin Lists",
+      "item": [
+        {
+          "name": "List Payments",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Command",
+                "value": "LIST_PAYMENTS"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"page\": 1,\n  \"limit\": 20\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                ""
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Payment",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Command",
+                "value": "GET_PAYMENT"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id\": {{payment_id}}\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                ""
+              ]
+            }
+          }
+        },
+        {
+          "name": "List Messages",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Command",
+                "value": "LIST_MESSAGES"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"page\": 1,\n  \"limit\": 20\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                ""
+              ]
+            }
+          }
+        },
+        {
+          "name": "Delete Message",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Command",
+                "value": "DELETE_MESSAGE"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id\": {{message_id}}\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                ""
+              ]
+            }
+          }
+        },
+        {
+          "name": "List Media",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Command",
+                "value": "LIST_MEDIA"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"page\": 1,\n  \"limit\": 20\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                ""
+              ]
+            }
+          }
+        },
+        {
+          "name": "Expire Pending Bookings",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Command",
+                "value": "EXPIRE_PENDING_BOOKINGS"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"hours\": 48\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                ""
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "11 Generic Resource Commands",
+      "item": [
+        {
+          "name": "LIST_RESOURCE Example",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Command",
+                "value": "LIST_RESOURCE"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"resource\": \"packages\",\n  \"page\": 1,\n  \"limit\": 20\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                ""
+              ]
+            }
+          }
+        },
+        {
+          "name": "GET_RESOURCE Example",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Command",
+                "value": "GET_RESOURCE"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"resource\": \"packages\",\n  \"id\": {{package_id}}\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                ""
+              ]
+            }
+          }
+        },
+        {
+          "name": "DELETE_RESOURCE Example",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Command",
+                "value": "DELETE_RESOURCE"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"resource\": \"categories\",\n  \"id\": {{category_id}}\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                ""
+              ]
+            },
+            "description": "Use carefully. This permanently deletes the selected resource row."
+          }
+        }
+      ]
+    }
+  ]
+}

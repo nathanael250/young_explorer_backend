@@ -8,7 +8,7 @@ SET @has_package_approval_status = (
 SET @sql = IF(
   @has_package_approval_status = 0,
   'ALTER TABLE packages ADD COLUMN approval_status ENUM(''approved'',''rejected'') DEFAULT ''approved'' AFTER status',
-  'SELECT 1'
+  'ALTER TABLE packages MODIFY approval_status ENUM(''approved'',''rejected'') DEFAULT ''approved'''
 );
 PREPARE stmt FROM @sql;
 EXECUTE stmt;

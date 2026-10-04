@@ -12,7 +12,7 @@ async function startServer() {
     await seedDefaultDurations();
 
     app.listen(port, () => {
-      console.log(`Young Explorers API running on port ${port}`);
+      console.log(`JuniorTravels API running on port ${port}`);
     });
   } catch (error) {
     console.error("Failed to start server:", error.message);

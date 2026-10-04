@@ -32,13 +32,13 @@ app.use("/uploads", express.static(path.join(__dirname, "../uploads")));
 app.get("/", (req, res) => {
   res.json({
     ok: true,
-    service: "young-explorers-api",
+    service: "juniortravels-api",
     message: "Use POST / with a Command header to call the API.",
   });
 });
 
 app.get("/health", (req, res) => {
-  res.json({ ok: true, service: "young-explorers-api" });
+  res.json({ ok: true, service: "juniortravels-api" });
 });
 
 app.use("/", masterRoutes);
@@ -52,6 +52,7 @@ app.use((req, res) => {
 
 app.use((err, req, res, next) => {
   const statusCode = err.statusCode || 500;
+  const message = normalizeErrorMessage(err);
 
   if (process.env.NODE_ENV !== "test") {
     console.error(err);
@@ -59,8 +60,20 @@ app.use((err, req, res, next) => {
 
   res.status(statusCode).json({
     ok: false,
-    message: err.message || "Internal server error",
+    message,
   });
 });
+
+function normalizeErrorMessage(err) {
+  if (err?.code === "ER_NO_REFERENCED_ROW_2") {
+    return "The request references a record that does not exist. Refresh your login token and verify the selected ids.";
+  }
+
+  if (err?.code === "ER_ROW_IS_REFERENCED_2") {
+    return "This record cannot be changed because other records still depend on it.";
+  }
+
+  return err.message || "Internal server error";
+}
 
 module.exports = app;

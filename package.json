@@ -1,7 +1,7 @@
 {
-  "name": "young_explorers",
+  "name": "juniortravels",
   "version": "1.0.0",
-  "description": "Young Explorers command-based Node.js backend",
+  "description": "JuniorTravels command-based Node.js backend",
   "main": "src/server.js",
   "scripts": {
     "dev": "nodemon src/server.js",

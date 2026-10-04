@@ -23,7 +23,7 @@ async function register(data) {
   if (wantsAdmin && data.admin_registration_token !== process.env.ADMIN_REGISTRATION_TOKEN) {
     throw httpError(403, "Admin registration is not allowed");
   }
-  const role = wantsAdmin ? "admin" : "explorer";
+  const role = wantsAdmin ? "admin" : "parent";
 
   const result = await insert("users", {
     first_name: data.first_name,
@@ -160,7 +160,7 @@ function signToken(user) {
       email: user.email,
       role: user.role,
     },
-    process.env.JWT_SECRET || "young_explorers_dev_secret",
+    process.env.JWT_SECRET || "juniortravels_dev_secret",
     { expiresIn: process.env.JWT_EXPIRES_IN || "7d" }
   );
 }

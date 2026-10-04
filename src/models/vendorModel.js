@@ -16,9 +16,9 @@ async function registerVendor(context) {
     throw httpError(409, "Email is already registered");
   }
 
-  const ribCertificate = context.file ? `/uploads/${context.file.filename}` : data.rib_certificate || null;
-  if (!ribCertificate) {
-    throw httpError(400, "RIB certificate is required");
+  const rdbCertificate = context.file ? `/uploads/${context.file.filename}` : data.rdb_certificate || data.rib_certificate || null;
+  if (!rdbCertificate) {
+    throw httpError(400, "RDB certificate is required");
   }
 
   const created = await transaction(async (connection) => {
@@ -39,7 +39,7 @@ async function registerVendor(context) {
 
     const [vendorResult] = await connection.execute(
       `INSERT INTO vendors
-        (user_id, business_name, business_phone, business_email, business_address, rib_certificate, approval_status)
+        (user_id, business_name, business_phone, business_email, business_address, rdb_certificate, approval_status)
        VALUES (?, ?, ?, ?, ?, ?, 'pending')`,
       [
         userResult.insertId,
@@ -47,7 +47,7 @@ async function registerVendor(context) {
         data.business_phone || data.phone || null,
         data.business_email || data.email,
         data.business_address || null,
-        ribCertificate,
+        rdbCertificate,
       ]
     );
 
@@ -139,7 +139,7 @@ async function reviewVendor(context) {
   const data = context.body.data || {};
   requireFields(data, ["vendor_id", "approval_status"]);
 
-  if (!["approved", "rejected", "blocked", "pending"].includes(data.approval_status)) {
+  if (!["pending", "under_review", "changes_requested", "approved", "rejected", "suspended", "blocked"].includes(data.approval_status)) {
     throw httpError(400, "Invalid vendor approval status");
   }
 
@@ -252,7 +252,7 @@ function signToken(user) {
       email: user.email,
       role: user.role,
     },
-    process.env.JWT_SECRET || "young_explorers_dev_secret",
+    process.env.JWT_SECRET || "juniortravels_dev_secret",
     { expiresIn: process.env.JWT_EXPIRES_IN || "7d" }
   );
 }

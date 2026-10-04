@@ -10,6 +10,7 @@ const publicCommands = new Set([
   "LIST_CATEGORIES",
   "GET_PACKAGE_DETAILS",
   "SEND_CONTACT_MESSAGE",
+  "SUBSCRIBE_NEWSLETTER",
 ]);
 
 const adminOnlyCommands = new Set([
@@ -30,6 +31,7 @@ const adminOnlyCommands = new Set([
   "DELETE_CATEGORY",
   "LIST_USERS",
   "GET_USER",
+  "CREATE_BOOKING_UPDATE",
   "LIST_PAYMENTS",
   "GET_PAYMENT",
   "LIST_MESSAGES",
@@ -59,11 +61,19 @@ const protectedCommands = new Set([
   "UPDATE_PROFILE",
   "CHANGE_PASSWORD",
   "GET_VENDOR",
+  "LIST_CHILDREN",
+  "GET_CHILD",
+  "CREATE_CHILD",
+  "UPDATE_CHILD",
+  "DELETE_CHILD",
   "CREATE_BOOKING",
   "CANCEL_BOOKING",
   "SUBMIT_PAYMENT",
   "LIST_BOOKINGS",
   "GET_BOOKING",
+  "GET_BOOKING_TICKET",
+  "LIST_BOOKING_UPDATES",
+  "GET_BOOKING_UPDATE",
 ]);
 
 function isPublicCommand(command) {

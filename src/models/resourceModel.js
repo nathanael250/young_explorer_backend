@@ -12,6 +12,9 @@ async function listResource(context) {
   if (config.table === "bookings" && context.user?.role === "vendor") {
     return listVendorBookings(context);
   }
+  if (config.table === "booking_updates" && context.user?.role === "vendor") {
+    return listVendorBookingUpdates(context);
+  }
 
   const vendor = await resolveVendorFilter(config, context.user);
 
@@ -66,6 +69,9 @@ async function getResource(context) {
   if (config.table === "bookings" && context.user?.role === "vendor") {
     return getVendorBooking(context, id);
   }
+  if (config.table === "booking_updates" && context.user?.role === "vendor") {
+    return getVendorBookingUpdate(context, id);
+  }
 
   const row = await findById(config, id, ["*"]);
   if (!row) {
@@ -108,6 +114,7 @@ async function listVendorBookings(context) {
   const where = ` WHERE ${clauses.join(" AND ")}`;
   const rows = await query(
     `SELECT b.id, b.booking_reference, b.user_id, b.package_id, b.availability_id, b.total_people,
+            b.ticket_number, b.ticket_issued_at,
             b.total_amount, b.special_request, b.booking_type, b.vip_request_details,
             b.quoted_amount, b.quoted_currency, b.booking_status, b.payment_status, b.booked_at
      FROM bookings b
@@ -156,12 +163,79 @@ async function getVendorBooking(context, id) {
   return { data: rows[0] };
 }
 
+async function listVendorBookingUpdates(context) {
+  const vendor = await requireApprovedVendor(context.user);
+  const filters = context.body.filters || {};
+  const page = Math.max(Number(context.body.page || 1), 1);
+  const limit = Math.min(Math.max(Number(context.body.limit || 20), 1), 100);
+  const offset = (page - 1) * limit;
+  const clauses = ["p.vendor_id = ?"];
+  const params = [vendor.id];
+
+  for (const field of ["booking_id", "availability_id", "package_id", "update_type"]) {
+    if (filters[field]) {
+      clauses.push(`bu.${field} = ?`);
+      params.push(filters[field]);
+    }
+  }
+
+  const where = ` WHERE ${clauses.join(" AND ")}`;
+  const rows = await query(
+    `SELECT bu.*
+     FROM booking_updates bu
+     INNER JOIN packages p ON p.id = bu.package_id
+     ${where}
+     ORDER BY bu.id DESC
+     LIMIT ${limit} OFFSET ${offset}`,
+    params
+  );
+  const totals = await query(
+    `SELECT COUNT(*) AS total
+     FROM booking_updates bu
+     INNER JOIN packages p ON p.id = bu.package_id
+     ${where}`,
+    params
+  );
+
+  return {
+    data: {
+      rows,
+      pagination: {
+        page,
+        limit,
+        total: totals[0].total,
+      },
+    },
+  };
+}
+
+async function getVendorBookingUpdate(context, id) {
+  const vendor = await requireApprovedVendor(context.user);
+  const rows = await query(
+    `SELECT bu.*
+     FROM booking_updates bu
+     INNER JOIN packages p ON p.id = bu.package_id
+     WHERE bu.id = ? AND p.vendor_id = ?
+     LIMIT 1`,
+    [id, vendor.id]
+  );
+
+  if (!rows.length) {
+    throw httpError(404, "Booking update not found");
+  }
+
+  return { data: rows[0] };
+}
+
 async function createResource(context) {
   const config = getResourceConfig(context.body.resource);
   const vendor = await ensureCanCreate(config, context.user);
 
   if (config.table === "destinations") {
     return createDestination(context, config, vendor);
+  }
+  if (config.table === "booking_updates") {
+    return createBookingUpdate(context, config);
   }
 
   const rawData = withUploadedMainImage(config, context.body.data || {}, context.file);
@@ -189,6 +263,7 @@ async function updateResource(context) {
   if (!existing) {
     throw httpError(404, "Resource not found");
   }
+  ensureCanReadRow(config, existing, context.user);
   ensureVendorOwnsRow(config, existing, vendor);
 
   const rawData = withUploadedMainImage(config, context.body.data || {}, context.file);
@@ -228,6 +303,7 @@ async function deleteResource(context) {
   if (!existing) {
     throw httpError(404, "Resource not found");
   }
+  ensureCanReadRow(config, existing, context.user);
   ensureVendorOwnsRow(config, existing, vendor);
 
   await query(`DELETE FROM ${config.table} WHERE id = ?`, [id]);
@@ -272,6 +348,52 @@ async function createDestination(context, config, vendor = null) {
   };
 }
 
+async function createBookingUpdate(context, config) {
+  if (context.user?.role === "vendor") {
+    await requireApprovedVendor(context.user);
+  } else {
+    requireAdmin(context.user);
+  }
+
+  const data = normalizeResourceData(config, context.body.data || {}, context.user);
+
+  if (data.booking_id) {
+    const rows = await query(
+      `SELECT b.id, b.user_id, b.package_id, b.availability_id, p.vendor_id
+       FROM bookings b
+       INNER JOIN packages p ON p.id = b.package_id
+       WHERE b.id = ?
+       LIMIT 1`,
+      [data.booking_id]
+    );
+    const booking = rows[0];
+
+    if (!booking) {
+      throw httpError(404, "Booking not found");
+    }
+
+    if (context.user.role === "vendor") {
+      const currentVendor = await findVendorByUserId(context.user.id);
+      if (!currentVendor || Number(booking.vendor_id) !== Number(currentVendor.id)) {
+        throw httpError(403, "You are not allowed to update this booking");
+      }
+    }
+
+    data.user_id = data.user_id || booking.user_id;
+    data.package_id = data.package_id || booking.package_id;
+    data.availability_id = data.availability_id || booking.availability_id;
+  }
+
+  const result = await insert(config.table, data);
+  const row = await findById(config, result.insertId, ["*"]);
+
+  return {
+    statusCode: 201,
+    message: "Booking update created",
+    data: row,
+  };
+}
+
 function normalizeResourceData(config, data, user) {
   const filtered = {};
 
@@ -295,8 +417,20 @@ function normalizeResourceData(config, data, user) {
     filtered.slug = slugify(filtered.name, { lower: true, strict: true });
   }
 
+  if (config.table === "destinations" && !filtered.description) {
+    filtered.description = data.description || data.full_description || data.short_description;
+  }
+
   if (config.table === "bookings" && !filtered.booking_reference) {
-    filtered.booking_reference = `YE-${Date.now()}`;
+    filtered.booking_reference = `JT-${Date.now()}`;
+  }
+
+  if (config.table === "children" && user?.role !== "admin") {
+    filtered.user_id = user.id;
+  }
+
+  if (config.table === "booking_updates" && user && !filtered.created_by) {
+    filtered.created_by = user.id;
   }
 
   if (config.table === "users" && filtered.password) {
@@ -518,6 +652,13 @@ function ensureCanCreate(config, user) {
     return null;
   }
 
+  if (config.ownerField) {
+    if (!user) {
+      throw httpError(401, "Authentication is required");
+    }
+    return null;
+  }
+
   if (config.vendorOwned && user?.role === "vendor") {
     return requireApprovedVendor(user);
   }
@@ -527,6 +668,13 @@ function ensureCanCreate(config, user) {
 }
 
 async function ensureCanModify(config, user) {
+  if (config.ownerField) {
+    if (!user) {
+      throw httpError(401, "Authentication is required");
+    }
+    return null;
+  }
+
   if (config.vendorOwned && user?.role === "vendor") {
     return requireApprovedVendor(user);
   }

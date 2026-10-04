@@ -155,7 +155,7 @@ async function reviewPackage(context) {
   const data = context.body.data || {};
   requireFields(data, ["package_id", "approval_status"]);
 
-  if (!["pending", "approved", "rejected"].includes(data.approval_status)) {
+  if (!["approved", "rejected"].includes(data.approval_status)) {
     throw httpError(400, "Invalid package approval status");
   }
 
@@ -269,7 +269,7 @@ async function updateAvailability(context) {
   }
   ensurePackageOwner(current, vendor);
 
-  const allowed = ["start_date", "end_date", "total_seats", "reserved_seats", "confirmed_seats", "booking_cutoff_hours", "status"];
+  const allowed = ["start_date", "end_date", "total_seats", "reserved_seats", "confirmed_seats", "booking_cutoff_hours", "operation_status", "status"];
   const updates = {};
 
   for (const field of allowed) {
@@ -302,7 +302,7 @@ async function updateItineraryDay(context) {
   const id = await resolvePackageDayId(context.body.id || data.id, data);
   await assertPackageDayOwner(id, vendor);
 
-  const allowed = ["title", "summary", "accommodation", "meals", "start_time", "end_time"];
+  const allowed = ["title", "summary", "accommodation", "meals", "location_name", "latitude", "longitude", "start_time", "end_time"];
   const updates = {};
 
   for (const field of allowed) {
@@ -358,14 +358,17 @@ async function addItineraryDestination(context) {
 
   const result = await query(
     `INSERT INTO package_day_destinations
-      (package_day_id, destination_id, visit_order, activity_title, activity_description, arrival_time, departure_time, notes)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+      (package_day_id, destination_id, visit_order, activity_title, activity_description, location_name, latitude, longitude, arrival_time, departure_time, notes)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     [
       data.package_day_id,
       data.destination_id,
       data.visit_order || 1,
       data.activity_title || null,
       data.activity_description || null,
+      data.location_name || null,
+      data.latitude || null,
+      data.longitude || null,
       data.arrival_time || null,
       data.departure_time || null,
       data.notes || null,
@@ -434,7 +437,7 @@ async function findPackageDetailsById(packageId, connection = null) {
 
   const [availability] = await runner.execute(
     `SELECT id, package_id, start_date, end_date, total_seats, reserved_seats, confirmed_seats, booking_cutoff_hours,
-            (total_seats - reserved_seats - confirmed_seats) AS remaining_seats, status, created_at
+            (total_seats - reserved_seats - confirmed_seats) AS remaining_seats, operation_status, status, created_at
      FROM package_availability
      WHERE package_id = ?
      ORDER BY start_date ASC`,

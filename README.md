@@ -1,4 +1,4 @@
-# Young Explorers API
+# JuniorTravels API
 
 Node.js backend using one command endpoint instead of many route paths.
 
@@ -10,13 +10,20 @@ cp .env.example .env
 npm run dev
 ```
 
-Import `src/config/db.sql` into MySQL before starting the server.
+Create a fresh local `junior` database before starting the server:
+
+```bash
+mysql -u root -p < src/config/create_junior_database.sql
+```
+
+This recreates the `junior` database, imports the current JuniorTravels schema, and adds the required indexes/newsletter table.
 
 If the database already exists from an earlier version, run:
 
 ```sql
 SOURCE src/config/migrations/001_align_requirements.sql;
 SOURCE src/config/migrations/002_indexes_and_constraints.sql;
+SOURCE src/config/migrations/013_juniortravels_child_tour_platform.sql;
 ```
 
 ## Command Endpoint
@@ -67,7 +74,14 @@ Useful commands:
 - `LIST_BOOKINGS`
 - `LIST_PAYMENTS`
 - `LIST_USERS`
+- `LIST_CHILDREN`
+- `GET_CHILD`
+- `CREATE_CHILD`
+- `UPDATE_CHILD`
+- `DELETE_CHILD`
 - `LIST_MESSAGES`
+- `LIST_BOOKING_UPDATES`
+- `CREATE_BOOKING_UPDATE`
 - `LIST_MEDIA`
 - `CREATE_PACKAGE`
 - `UPDATE_PACKAGE`
@@ -79,6 +93,7 @@ Useful commands:
 - `ADD_ITINERARY_DESTINATION`
 - `REMOVE_ITINERARY_DESTINATION`
 - `CREATE_BOOKING`
+- `GET_BOOKING_TICKET`
 - `CANCEL_BOOKING`
 - `EXPIRE_PENDING_BOOKINGS`
 - `SUBMIT_PAYMENT`
@@ -89,7 +104,9 @@ Useful commands:
 
 Resource logic lives in `src/models/masterModel.js`; controllers and routes stay thin.
 
-Approved vendors can publish their own packages by setting `status` to `published`. Public users see packages only when `status = "published"` and `approval_status = "approved"`; vendor-created packages are approved by default, while admins can still use `REVIEW_PACKAGE` to reject or moderate a package later.
+JuniorTravels is designed around the parent journey: discover a child-friendly activity, understand supervision and safety, book a specific tour date, provide child and emergency information, pay, and receive updates. A child does not need a login account. Parents can either keep reusable child profiles with the child commands or send child information directly in `CREATE_BOOKING`.
+
+Approved vendors can create and publish their own packages. Public users see packages when `status = "published"` and `approval_status = "approved"`. Admins can still use `REVIEW_PACKAGE` to reject or restore a package if moderation is needed.
 
 ## Production
 
@@ -164,7 +181,7 @@ Content-Type: application/json
       "gender": "female",
       "nationality": "Rwandan",
       "passport_number": "P123456",
-      "date_of_birth": "2002-04-12",
+      "age": 10,
       "emergency_contact": "+250788000000"
     }
   ]

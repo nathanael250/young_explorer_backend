@@ -29,9 +29,9 @@ async function handleCommand(context) {
     });
   }
 
-  switch (command) {
+    switch (command) {
     case commands.HEALTH:
-      return { message: "API is ready", data: { service: "young-explorers-api" } };
+      return { message: "API is ready", data: { service: "juniortravels-api" } };
     case commands.AUTH_REGISTER:
       return authModel.register(context.body.data || {});
     case commands.VENDOR_REGISTER:
@@ -88,6 +88,8 @@ async function handleCommand(context) {
       return bookingModel.cancelBooking(context);
     case commands.BOOKING_EXPIRE_PENDING:
       return bookingModel.expirePendingBookings(context);
+    case commands.BOOKING_GET_TICKET:
+      return bookingModel.getBookingTicket(context);
     case commands.BOOKING_QUOTE_VIP:
       return bookingModel.quoteVipBooking(context);
     case commands.BOOKING_MARK_VIP_PAID:
@@ -131,9 +133,17 @@ const resourceCommandMap = {
   [commands.GET_PAYMENT]: { resource: "payments", handler: resourceModel.getResource },
   [commands.LIST_USERS]: { resource: "users", handler: resourceModel.listResource },
   [commands.GET_USER]: { resource: "users", handler: resourceModel.getResource },
+  [commands.LIST_CHILDREN]: { resource: "children", handler: resourceModel.listResource },
+  [commands.GET_CHILD]: { resource: "children", handler: resourceModel.getResource },
+  [commands.CREATE_CHILD]: { resource: "children", handler: resourceModel.createResource },
+  [commands.UPDATE_CHILD]: { resource: "children", handler: resourceModel.updateResource },
+  [commands.DELETE_CHILD]: { resource: "children", handler: resourceModel.deleteResource },
   [commands.LIST_MESSAGES]: { resource: "messages", handler: resourceModel.listResource },
   [commands.GET_MESSAGE]: { resource: "messages", handler: resourceModel.getResource },
   [commands.DELETE_MESSAGE]: { resource: "messages", handler: resourceModel.deleteResource },
+  [commands.LIST_BOOKING_UPDATES]: { resource: "booking_updates", handler: resourceModel.listResource },
+  [commands.GET_BOOKING_UPDATE]: { resource: "booking_updates", handler: resourceModel.getResource },
+  [commands.CREATE_BOOKING_UPDATE]: { resource: "booking_updates", handler: resourceModel.createResource },
   [commands.LIST_MEDIA]: { resource: "media_files", handler: resourceModel.listResource },
   [commands.GET_MEDIA]: { resource: "media_files", handler: resourceModel.getResource },
   [commands.LIST_PACKAGES]: { resource: "packages", handler: resourceModel.listResource },

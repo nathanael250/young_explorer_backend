@@ -83,24 +83,22 @@ npm run dev
 
 Apply database setup:
 
-```sql
-SOURCE src/config/db.sql;
-SOURCE src/config/migrations/001_align_requirements.sql;
-SOURCE src/config/migrations/002_indexes_and_constraints.sql;
+```bash
+mysql -u root -p < src/config/create_junior_database.sql
 ```
 
-If `db.sql` was already imported before, run only the migrations.
+This recreates the `junior` database and imports the current JuniorTravels schema.
 
-If you see an error like `Unknown column 'price_per_person' in 'field list'`, your database schema is behind the code. Run:
+If you already have an older database and only want to migrate it, enter MySQL first:
 
 ```bash
-mysql -u root young_explorers < src/config/migrations/001_align_requirements.sql
+mysql -u root -p junior
 ```
 
-Or inside MySQL:
+Then run the migration from inside the MySQL prompt:
 
 ```sql
-SOURCE src/config/migrations/001_align_requirements.sql;
+SOURCE src/config/migrations/013_juniortravels_child_tour_platform.sql;
 ```
 
 ## Register Explorer
@@ -212,8 +210,7 @@ Body:
   "province": "Kigali",
   "district": "Gasabo",
   "category": "history",
-  "short_description": "A memorial and learning center in Kigali.",
-  "full_description": "A key destination for understanding Rwanda history.",
+  "description": "A memorial and learning center in Kigali for understanding Rwanda history.",
   "best_time_to_visit": "All year",
   "entry_fee": 0,
   "latitude": -1.9306,
@@ -232,8 +229,7 @@ Logical request shape:
   "province": "Kigali",
   "district": "Gasabo",
   "category": "history",
-  "short_description": "A memorial and learning center in Kigali.",
-  "full_description": "A key destination for understanding Rwanda history.",
+  "description": "A memorial and learning center in Kigali for understanding Rwanda history.",
   "best_time_to_visit": "All year",
   "entry_fee": 0,
   "latitude": -1.9306,
@@ -255,8 +251,7 @@ data:
   "province": "Kigali",
   "district": "Gasabo",
   "category": "history",
-  "short_description": "A memorial and learning center in Kigali.",
-  "full_description": "A key destination for understanding Rwanda history.",
+  "description": "A memorial and learning center in Kigali for understanding Rwanda history.",
   "best_time_to_visit": "All year",
   "entry_fee": 0,
   "latitude": -1.9306,
@@ -565,7 +560,7 @@ Body:
       "gender": "female",
       "nationality": "Rwandan",
       "passport_number": "P123456",
-      "date_of_birth": "2002-04-12",
+      "age": 10,
       "emergency_contact": "+250788000000"
     }
   ]

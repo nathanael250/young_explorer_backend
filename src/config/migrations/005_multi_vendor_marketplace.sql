@@ -8,7 +8,7 @@ CREATE TABLE IF NOT EXISTS vendors (
   business_phone VARCHAR(30),
   business_email VARCHAR(150),
   business_address VARCHAR(255),
-  rib_certificate VARCHAR(255),
+  rdb_certificate VARCHAR(255),
   approval_status ENUM('pending','approved','rejected','blocked') DEFAULT 'pending',
   review_notes TEXT,
   reviewed_by BIGINT,
